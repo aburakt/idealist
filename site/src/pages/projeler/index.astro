@@ -8,9 +8,9 @@ import { loadSite } from "../../lib/content"
 const { projects, settings } = await loadSite()
 ---
 <Base title="Projeler" path="/projeler/" description={`${settings.companyName} projeleri: hastane, konut, ofis, AVM, otel, eğitim, sanayi ve yurt dışı projelerinde mekanik tesisat tasarım ve müşavirlik.`}>
-  <PageHeader eyebrow="Projeler" title="Projelerimiz" intro="Mekanik tesisat tasarımını ve müşavirliğini üstlendiğimiz projelerden bir seçki. Faaliyet alanına göre süzebilirsiniz." />
+  <PageHeader label="Projeler" title="Projelerimiz" intro="Mekanik tesisat tasarımını ve müşavirliğini üstlendiğimiz projelerden bir seçki. Faaliyet alanına göre süzebilirsiniz." />
   <AreaNav />
-  <section class="wrap grid gap-x-7 gap-y-12 py-16 sm:grid-cols-2 lg:grid-cols-3">
+  <section class="wrap grid gap-x-8 gap-y-14 py-14 sm:grid-cols-2 lg:grid-cols-3">
     {projects.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}
   </section>
 </Base>

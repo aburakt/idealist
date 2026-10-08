@@ -27,7 +27,7 @@ const visible = (html: string): string =>
 
 type Check = { name: string; path: string; status?: number; has?: string[]; hasNot?: string[] }
 export const CHECKS: Check[] = [
-  { name: "Ana sayfa", path: "/", has: ['<html lang="tr"', "<h1", 'rel="canonical" href="https://www.idealistmuhendislik.com.tr/"', "Mekanik tesisat", "/logo.svg", "tel:+903129055566", "Öne çıkan projeler", "Merkez Ankara", "/faaliyet-alanlari/saglik/", 'hreflang="en"'] },
+  { name: "Ana sayfa", path: "/", has: ['<html lang="tr"', "<h1", 'rel="canonical" href="https://www.idealistmuhendislik.com.tr/"', "Mekanik tesisat", "/logo.svg", "tel:+903129055566", "Seçili projeler", "Merkez Ankara", "/faaliyet-alanlari/saglik/", 'hreflang="en"'] },
   { name: "Hakkımızda", path: "/hakkimizda/", has: ["Kuruluş", "Misyon", "Mikail Sandıkcı", "2004"] },
   { name: "Projeler", path: "/projeler/", has: ["Ceylanpınar 75 Yataklı Devlet Hastanesi", "Malta City Center", "Tiflis Rehabilitasyon Merkezi", "/projeler/kervansaray/"] },
   { name: "Faaliyet alanı", path: "/faaliyet-alanlari/yurt-disi/", has: ["Yurt Dışı Projeleri", "Malta City Center", "Sheraton Batum Oteli"], hasNot: ["Merkez Ankara"] },

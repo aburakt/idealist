@@ -16,7 +16,7 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - Her alanda Türkçe `help`, her koleksiyonda `presentable` alan (test ölçer). Panel korumaları `pb/pb_hooks/lib/protect.js`.
 - Build'e superuser token'ı verilmez. PB yoksa build kırılır (yalnız `CONTENT_SOURCE=fixture` istisna).
 - CSP `style-src 'self'`, `img-src 'self'`: hiçbir yerde `style=` ya da inline script yok; panel görselleri build'de indirilir.
-- Tek sabit tema, koyu moda otomatik geçiş yok. Denge: üst bantlar ve footer koyu grafit (`.night` + `Flow` akış animasyonu), gövde taş tonu (`canvas`), kartlar beyaz. Sayfa sonlarına kırmızı "iletişime geçin" bandı konmaz (Burak'ın EBS geri bildirimi). Renkler logodan (kırmızı #e3000f, gri #9c9c9c).
+- Tasarım dili kurumsal mühendislik müşavirliği (Arup, Max Fordham, Atelier Ten örnek alındı; araştırma `docs/tasarim-arastirma.md`): beyaz/kâğıt zemin, mürekkep siyahı metin, renk fotoğraflardan gelir, kırmızı (#e3000f) yalnız küçük vurgularda. Yazı IBM Plex Sans, sayı ve künye IBM Plex Mono. Parçacık/akış animasyonu, cam efektli buton, sayaç, slider, kırmızı CTA bandı yok. Tek sabit tema, koyu moda otomatik geçiş yok.
 - PB koleksiyonları: settings, pages (hakkimizda, en), services, areas (faaliyet alanları), projects, posts (blog, `site/src/data/posts.json` ile tohumlanır). Yeni koleksiyon `pb_hooks/idealist.pb.js` CONTENT listesine de eklenir.
 - Proje adresi `/projeler/<slug>/`, faaliyet alanı adresi `/faaliyet-alanlari/<slug>/`, blog `/blog/<slug>/`; slug'lar kayıttan sonra kilitlidir.
 - Logo: `site/public/logo.svg` eski PNG'den birebir vektör; yeniden çizilmez.
