@@ -1,23 +1,18 @@
 {
   "name": "idealist",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "site"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "next": "^13.0.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "check": "bun run --filter '@idealist/site' check",
+    "build": "bun run --filter '@idealist/site' build",
+    "test": "bun test tests",
+    "verify": "bun scripts/verify.ts",
+    "verify:responsive": "bun scripts/responsive-check.ts"
   },
   "devDependencies": {
-    "prettier": "^2.7.1"
+    "oxlint": "1.87.0"
   }
 }

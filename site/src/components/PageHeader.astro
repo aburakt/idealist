@@ -1,0 +1,18 @@
+---
+import Flow from "./Flow.astro"
+
+// Sayfa üst bandı: koyu grafit zemin üzerinde akış animasyonu. Gövde açık taş tonunda kalır (dengeli tema).
+interface Props { eyebrow?: string; title: string; intro?: string }
+const { eyebrow, title, intro } = Astro.props
+---
+<section class="night relative isolate overflow-hidden">
+  <Flow class="-z-20" />
+  <div class="night-fade pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="wrap py-14 md:py-20">
+    <slot name="before" />
+    {eyebrow && <p class="eyebrow rise">{eyebrow}</p>}
+    <h1 class="rise d1 mt-4 max-w-[24ch] text-[clamp(2rem,4.5vw,3.25rem)]">{title}</h1>
+    {intro && <p class="rise d2 mt-4 max-w-[62ch] text-lg text-white/70">{intro}</p>}
+    <slot />
+  </div>
+</section>

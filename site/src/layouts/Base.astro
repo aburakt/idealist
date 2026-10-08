@@ -1,0 +1,51 @@
+---
+import "../styles/global.css"
+import Footer from "../components/Footer.astro"
+import Header from "../components/Header.astro"
+import WhatsApp from "../components/WhatsApp.astro"
+import { loadSite } from "../lib/content"
+import { shareImageUrl } from "../lib/image"
+import { isFixtureMode } from "../lib/pb"
+
+interface Props { title: string; description?: string; path: string; image?: string; lang?: "tr" | "en" }
+const { title, description, path, image, lang = "tr" } = Astro.props
+const { settings } = await loadSite()
+const desc = description || settings.seoDescription
+const shareSrc = settings.shareImage ?? settings.heroImage
+const share = image ?? (shareSrc ? await shareImageUrl(shareSrc) : undefined)
+const ogImage = share ? new URL(share, Astro.site).href : undefined
+const home = lang === "en" ? "Idealist Engineering | Mechanical Installation Design and Consultancy" : `${settings.companyName} | Mekanik Tesisat Tasarım ve Müşavirlik`
+const fullTitle = path === "/" || path === "/en/" ? home : `${title} | ${lang === "en" ? "Idealist Engineering" : settings.companyName}`
+const canonical = new URL(path, Astro.site).href
+const fixture = isFixtureMode()
+const noindex = fixture || (process.env.NOINDEX ?? import.meta.env.NOINDEX) === "1"
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    {(path === "/" || path === "/en/") && <link rel="alternate" hreflang="tr" href={new URL("/", Astro.site).href} />}
+    {(path === "/" || path === "/en/") && <link rel="alternate" hreflang="en" href={new URL("/en/", Astro.site).href} />}
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={lang === "en" ? "en_US" : "tr_TR"} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+  </head>
+  <body>
+    {fixture && <p data-fixture-banner class="bg-ink px-4 py-2 text-center text-sm font-bold text-paper">Önizleme: içerik henüz PocketBase'den gelmiyor.</p>}
+    <Header lang={lang} />
+    <main id="main"><slot /></main>
+    <Footer lang={lang} />
+    <WhatsApp />
+  </body>
+</html>

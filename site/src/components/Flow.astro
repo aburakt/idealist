@@ -1,0 +1,7 @@
+---
+// Akış animasyonu katmanı (scripts/flow.ts). Dekoratif; ekran okuyucudan gizli.
+interface Props { class?: string }
+const { class: cls } = Astro.props
+---
+<canvas data-flow class:list={["absolute inset-0 size-full", cls]} aria-hidden="true"></canvas>
+<script>import "../scripts/flow"</script>

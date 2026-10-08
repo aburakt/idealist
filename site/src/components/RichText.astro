@@ -1,0 +1,8 @@
+---
+import { renderRich } from "../lib/rich"
+
+interface Props { html: string; class?: string }
+const { html, class: cls } = Astro.props
+const out = await renderRich(html)
+---
+<div class:list={["prose", cls]} set:html={out} />
