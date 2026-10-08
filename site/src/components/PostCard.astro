@@ -1,21 +1,15 @@
 ---
-import Photo from "./Photo.astro"
 import { formatDate } from "../lib/format"
 import type { Post } from "../lib/types"
 
-interface Props { post: Post; eager?: boolean }
-const { post: p, eager = false } = Astro.props
+// Blog satırı: tarih, konu, başlık, özet. Görselsiz liste (yayın arşivi gibi).
+interface Props { post: Post }
+const { post: p } = Astro.props
 ---
-<a href={`/blog/${p.slug}/`} class="project-card card group flex flex-col overflow-hidden text-ink no-underline transition-colors hover:border-ink">
-  <div class="aspect-[16/9] overflow-hidden bg-mist">
-    {p.cover && <Photo img={p.cover} alt="" class="size-full object-cover" width={800} sizes="(min-width: 768px) 33vw, 100vw" loading={eager ? "eager" : "lazy"} />}
-  </div>
-  <div class="flex flex-1 flex-col p-6">
-    <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
-      {p.category && <span class="font-semibold text-brand">{p.category}</span>}
-      <time datetime={p.date}>{formatDate(p.date)}</time>
-    </p>
-    <h3 class="mt-3 text-lg group-hover:text-brand">{p.title}</h3>
-    {p.excerpt && <p class="mt-2 line-clamp-3 text-[0.95rem] text-ink-soft">{p.excerpt}</p>}
+<a href={`/blog/${p.slug}/`} class="group grid gap-2 border-t border-line py-7 text-ink no-underline md:grid-cols-[12rem_1fr] md:gap-10">
+  <p class="mono text-xs uppercase tracking-[0.06em] text-ink-soft"><time datetime={p.date}>{formatDate(p.date)}</time>{p.category && <span class="mt-1 block text-ink">{p.category}</span>}</p>
+  <div>
+    <h3 class="text-xl font-medium decoration-brand underline-offset-4 group-hover:underline">{p.title}</h3>
+    {p.excerpt && <p class="mt-2 max-w-[70ch] text-ink-soft">{p.excerpt}</p>}
   </div>
 </a>

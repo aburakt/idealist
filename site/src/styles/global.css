@@ -1,154 +1,128 @@
 @import "tailwindcss";
-@import "@fontsource-variable/archivo/index.css";
+@import "@fontsource-variable/ibm-plex-sans/index.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-ext-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-mono/latin-ext-500.css";
 
 /*
- * Tek, sabit tema: sistem koyu moduna göre değişmez. Ne bembeyaz ne simsiyah: üst bantlar ve alt bilgi koyu grafit
- * (night), gövde sıcak taş tonu (canvas), kartlar beyaz (paper). Vurgu logodaki İdealist kırmızısı (#e3000f).
+ * Kurumsal mühendislik dili (Arup, Max Fordham, Atelier Ten gibi müşavirlik siteleri örnek alındı):
+ * kâğıt beyazı zemin, mürekkep siyahı metin, renk fotoğraflardan gelir. Logodaki kırmızı yalnız küçük vurgularda
+ * (bağlantı, seçili süzgeç, ince çizgi). Bilgi ve sayılar IBM Plex Mono ile teknik pafta havasında.
+ * Tek sabit tema; koyu moda otomatik geçiş yok. Animasyon en aza indirildi.
  */
 @theme {
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-brand: oklch(0.585 0.236 27.5);
-  --color-brand-deep: oklch(0.5 0.205 27.5);
-  --color-brand-soft: oklch(0.965 0.02 25);
-  --color-steel: oklch(0.69 0 0);
-  --color-ink: oklch(0.22 0.014 255);
-  --color-ink-soft: oklch(0.47 0.014 255);
-  --color-paper: oklch(0.995 0.002 85);
-  --color-canvas: oklch(0.968 0.006 85);
-  --color-mist: oklch(0.945 0.008 85);
-  --color-line: oklch(0.885 0.01 85);
-  --color-night: oklch(0.235 0.02 255);
-  --color-night-soft: oklch(0.29 0.022 255);
+  --color-brand: #e3000f;
+  --color-brand-deep: #b8000c;
+  --color-steel: #9c9c9c;
+  --color-ink: #1c1d1f;
+  --color-ink-soft: #5f6165;
+  --color-paper: #ffffff;
+  --color-canvas: #f5f4f1;
+  --color-mist: #ecebe7;
+  --color-line: #dcdad5;
+  --color-night: #1c1d1f;
 }
 
 @layer base {
   :root { color-scheme: light; }
-  html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+  html { scroll-behavior: smooth; scroll-padding-top: 7rem; }
   body {
     font-family: var(--font-sans);
     color: var(--color-ink);
-    background: var(--color-canvas);
-    line-height: 1.65;
+    background: var(--color-paper);
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
-  /* izleme boyuta göre: büyük başlık sıkı, gövde nötr (optik ölçek) */
-  h1 { letter-spacing: -0.03em; line-height: 1.04; text-wrap: balance; font-weight: 700; }
-  h2 { letter-spacing: -0.022em; line-height: 1.1; text-wrap: balance; font-weight: 700; }
-  h3 { letter-spacing: -0.01em; line-height: 1.25; text-wrap: balance; font-weight: 650; }
-  ::selection { background: var(--color-brand); color: white; }
-  :focus-visible { outline: 3px solid var(--color-brand); outline-offset: 3px; border-radius: 4px; }
-  a { text-underline-offset: 0.2em; }
+  h1 { letter-spacing: -0.025em; line-height: 1.08; text-wrap: balance; font-weight: 500; }
+  h2 { letter-spacing: -0.018em; line-height: 1.15; text-wrap: balance; font-weight: 500; }
+  h3 { letter-spacing: -0.005em; line-height: 1.3; text-wrap: balance; font-weight: 600; }
+  ::selection { background: var(--color-ink); color: white; }
+  :focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; }
+  a { text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
   p, li, h1, h2, h3, h4, a, dd, dt, address, td, th { overflow-wrap: anywhere; }
 }
 
 @layer components {
-  .wrap { margin-inline: auto; width: 100%; max-width: 76rem; padding-inline: 1.25rem; }
+  .wrap { margin-inline: auto; width: 100%; max-width: 82rem; padding-inline: 1.25rem; }
+  @media (min-width: 768px) { .wrap { padding-inline: 2rem; } }
+
+  /* bölüm etiketi: küçük, büyük harf, mono; numara ile (01 Hizmetler) */
+  .label { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-soft); }
+  .label-num { color: var(--color-brand); margin-right: 0.75rem; }
+  .mono { font-family: var(--font-mono); font-feature-settings: "zero" 0; }
+
+  /* metin bağlantısı: çizgili, oklu */
+  .link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--color-line); transition: text-decoration-color 0.15s, color 0.15s; }
+  .link:hover { text-decoration-color: var(--color-brand); }
+  .link svg { width: 1em; height: 1em; transition: transform 0.2s ease-out; }
+  .link:hover svg { transform: translateX(3px); }
 
   .btn {
-    display: inline-flex; align-items: center; gap: 0.55rem; border-radius: 0.375rem; padding: 0.85rem 1.35rem;
-    font-weight: 650; font-size: 0.95rem; line-height: 1; text-decoration: none; white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s ease-out;
-    -webkit-tap-highlight-color: transparent;
+    display: inline-flex; align-items: center; gap: 0.6rem; border-radius: 2px; padding: 0.85rem 1.3rem;
+    font-weight: 500; font-size: 0.95rem; line-height: 1; text-decoration: none; white-space: nowrap;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
   }
-  /* geri bildirim basışta, bırakmayı beklemeden */
-  .btn:active { transform: scale(0.97); }
-  .btn svg { width: 1.1em; height: 1.1em; flex: none; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-  .btn:hover svg { transform: translateX(3px); }
-  .btn-brand { background: var(--color-brand); color: white; }
-  .btn-brand:hover { background: var(--color-brand-deep); }
+  .btn svg { width: 1.05em; height: 1.05em; flex: none; }
   .btn-ink { background: var(--color-ink); color: white; }
-  .btn-ink:hover { background: oklch(0.32 0.01 255); }
-  .btn-outline { color: var(--color-ink); border: 1.5px solid var(--color-line); background: var(--color-paper); }
-  .btn-outline:hover { border-color: var(--color-ink); }
-  .btn-glass { color: white; border: 1.5px solid oklch(1 0 0 / 0.28); background: oklch(1 0 0 / 0.06); backdrop-filter: blur(12px); }
-  .btn-glass:hover { border-color: oklch(1 0 0 / 0.6); background: oklch(1 0 0 / 0.12); }
-  .btn-sm { padding: 0.6rem 0.95rem; font-size: 0.85rem; }
+  .btn-ink:hover { background: #000; }
+  .btn-outline { color: var(--color-ink); border: 1px solid var(--color-ink); }
+  .btn-outline:hover { background: var(--color-ink); color: white; }
+  .btn-sm { padding: 0.6rem 0.9rem; font-size: 0.85rem; }
 
-  /* bölüm üst yazısı: kırmızı kısa çizgi + büyük harf etiket */
-  .eyebrow { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-brand); }
-  .eyebrow::before { content: ""; width: 1.75rem; height: 2px; background: currentColor; }
-  .card { border: 1px solid var(--color-line); border-radius: 0.5rem; background: var(--color-paper); }
-
-  /* teknik çizim ızgarası (mühendislik paftası hissi) */
-  .grid-paper {
-    background-color: var(--color-canvas);
-    background-image:
-      linear-gradient(oklch(0.21 0.008 255 / 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.21 0.008 255 / 0.05) 1px, transparent 1px);
-    background-size: 28px 28px;
+  /* süzgeç sekmesi: alt çizgili metin; seçili olan kırmızı çizgi */
+  .tab {
+    display: inline-flex; flex: none; align-items: baseline; gap: 0.4rem; padding: 0.9rem 0; border-bottom: 2px solid transparent;
+    font-size: 0.9rem; font-weight: 500; color: var(--color-ink-soft); text-decoration: none; white-space: nowrap; transition: color 0.15s, border-color 0.15s;
   }
+  .tab:hover { color: var(--color-ink); }
+  .tab[aria-current="page"] { color: var(--color-ink); border-color: var(--color-brand); }
+  .tab .mono { font-size: 0.75rem; color: var(--color-steel); }
 
-  /* koyu üst bant: grafit, hafif kırmızı ışık; üstünde akış animasyonu (scripts/flow.ts) */
-  .night {
-    background-color: var(--color-night);
-    background-image:
-      radial-gradient(50rem 28rem at 90% -10%, oklch(0.585 0.236 27.5 / 0.16), transparent 70%),
-      radial-gradient(40rem 30rem at -10% 120%, oklch(0.5 0.06 240 / 0.25), transparent 70%);
-    color: white;
-  }
-  .night .eyebrow { color: oklch(0.72 0.17 27.5); }
-  /* yazının olduğu sol tarafı akıştan ayırır */
-  .night-fade { background: linear-gradient(90deg, var(--color-night) 10%, oklch(0.235 0.02 255 / 0.6) 45%, transparent 75%); }
-
-  /* süzgeç/etiket çipi: açık zeminde beyaz, seçiliyken koyu */
-  .chip {
-    display: inline-flex; flex: none; align-items: center; gap: 0.5rem; border: 1px solid var(--color-line); border-radius: 999px;
-    background: var(--color-paper); padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600; line-height: 1.2; color: var(--color-ink);
-    text-decoration: none; white-space: nowrap; transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.1s ease-out;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .chip:hover { border-color: var(--color-ink); }
-  .chip:active { transform: scale(0.96); }
-  .chip[aria-current="page"] { border-color: var(--color-ink); background: var(--color-ink); color: white; }
-  .night .chip { border-color: oklch(1 0 0 / 0.2); background: oklch(1 0 0 / 0.06); color: white; }
-  .night .chip:hover { border-color: oklch(1 0 0 / 0.55); }
-
-  /* yapışık süzgeç şeridi: yarı saydam malzeme, içerik altından akar */
-  .area-bar { background: oklch(0.968 0.006 85 / 0.82); backdrop-filter: blur(16px) saturate(160%); }
-  /* yatay kayan şeridin kenarları yumuşak solar; kaydırma çubuğu gizli */
-  .scroller { scrollbar-width: none; mask-image: linear-gradient(90deg, transparent, black 1.25rem, black calc(100% - 2.5rem), transparent); }
+  .area-bar { background: rgb(255 255 255 / 0.94); backdrop-filter: blur(12px); }
+  .scroller { scrollbar-width: none; }
   .scroller::-webkit-scrollbar { display: none; }
+
+  /* bilgi tablosu (proje künyesi) */
+  .facts > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1rem; padding: 0.85rem 0; border-top: 1px solid var(--color-line); }
+  .facts > div:last-child { border-bottom: 1px solid var(--color-line); }
+  .facts dt { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-soft); padding-top: 0.2rem; }
+
+  .photo img { transition: opacity 0.3s; }
+  .photo:hover img { opacity: 0.9; }
 
   /* WhatsApp: yalnız simge, sağ alt köşe */
   .wa-fab {
-    position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; display: grid; place-items: center; width: 3.5rem; height: 3.5rem;
-    border-radius: 999px; background: oklch(0.7 0.17 150); color: white; box-shadow: 0 10px 30px -8px oklch(0.4 0.12 150 / 0.55);
-    transition: transform 0.1s ease-out, background-color 0.2s;
+    position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; display: grid; place-items: center; width: 3.25rem; height: 3.25rem;
+    border-radius: 999px; background: #25d366; color: white; box-shadow: 0 6px 20px -6px rgb(0 0 0 / 0.35); transition: transform 0.1s ease-out;
   }
-  .wa-fab:hover { background: oklch(0.64 0.16 150); }
   .wa-fab:active { transform: scale(0.94); }
 
-  .project-card img { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-  .project-card:hover img { transform: scale(1.04); }
-
-  .rise { animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .d1 { animation-delay: 0.08s; } .d2 { animation-delay: 0.18s; } .d3 { animation-delay: 0.3s; }
+  .fade { animation: fade 0.6s ease-out both; }
 
   /* proje galerisi: tam ekran görüntüleyici (scripts/gallery.ts) */
-  .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: oklch(0.12 0.005 255 / 0.96); color: white; }
+  .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(18 18 19 / 0.97); color: white; }
   .viewer::backdrop { background: transparent; }
   .viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
   /* panel editöründen gelen zengin metin */
-  .prose { color: var(--color-ink); font-size: 1.075rem; }
+  .prose { color: var(--color-ink); font-size: 1.075rem; line-height: 1.75; }
   .prose > * + * { margin-top: 1em; }
   .prose h2 { font-size: 1.5rem; margin-top: 2em; }
   .prose h3 { font-size: 1.2rem; margin-top: 1.6em; }
   .prose ul { list-style: disc; padding-left: 1.3em; }
   .prose ol { list-style: decimal; padding-left: 1.3em; }
   .prose li + li { margin-top: 0.35em; }
-  .prose a { color: var(--color-brand); text-decoration: underline; }
-  .prose strong, .prose b { font-weight: 700; }
-  .prose img { border-radius: 0.5rem; height: auto; max-width: 100%; }
+  .prose li::marker { color: var(--color-steel); }
+  .prose a { color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-brand); }
+  .prose strong, .prose b { font-weight: 600; }
+  .prose img { height: auto; max-width: 100%; }
 }
 
-@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-
-@media (prefers-reduced-transparency: reduce) {
-  .area-bar { background: var(--color-canvas); backdrop-filter: none; }
-  .btn-glass { background: var(--color-night-soft); backdrop-filter: none; }
-}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

@@ -1,5 +1,4 @@
 ---
-import Icon from "../components/Icon.astro"
 import PageHeader from "../components/PageHeader.astro"
 import Base from "../layouts/Base.astro"
 import { loadSite } from "../lib/content"
@@ -9,34 +8,18 @@ const { settings: s } = await loadSite()
 const phones = [s.phone, s.phone2].filter(Boolean)
 ---
 <Base title="İletişim" path="/iletisim/" description={`${s.companyName}: ${s.address} · Telefon ${s.phone} · ${s.email}`}>
-  <PageHeader eyebrow="İletişim" title="Bize ulaşın" intro="Projeniz için teklif, bilgi ya da görüşme talepleriniz için arayın, yazın ya da ofisimize uğrayın." />
-  <section class="wrap grid gap-10 py-16 lg:grid-cols-[1fr_1.3fr]">
-    <div class="grid content-start gap-4">
-      {phones.map((p, i) => (
-        <a href={telHref(p)} class="card flex items-center gap-4 p-5 text-ink no-underline hover:border-brand">
-          <span class="grid size-12 shrink-0 place-items-center rounded-md bg-brand-soft text-brand"><Icon name="phone" class="size-6" /></span>
-          <span><span class="block text-sm text-ink-soft">Santral{phones.length > 1 ? ` ${i + 1}` : ""}</span><span class="text-lg font-bold">{p}</span></span>
-        </a>
-      ))}
-      <a href={`mailto:${s.email}`} class="card flex items-center gap-4 p-5 text-ink no-underline hover:border-brand">
-        <span class="grid size-12 shrink-0 place-items-center rounded-md bg-brand-soft text-brand"><Icon name="mail" class="size-6" /></span>
-        <span class="min-w-0"><span class="block text-sm text-ink-soft">E-posta</span><span class="text-lg font-bold">{s.email}</span></span>
-      </a>
-      {s.fax && (
-        <div class="card flex items-center gap-4 p-5">
-          <span class="grid size-12 shrink-0 place-items-center rounded-md bg-mist text-ink-soft"><Icon name="fax" class="size-6" /></span>
-          <span><span class="block text-sm text-ink-soft">Faks</span><span class="text-lg font-bold">{s.fax}</span></span>
-        </div>
-      )}
-      <div class="card flex gap-4 p-5">
-        <span class="grid size-12 shrink-0 place-items-center rounded-md bg-brand-soft text-brand"><Icon name="pin" class="size-6" /></span>
-        <span><span class="block text-sm text-ink-soft">Adres</span><address class="font-semibold not-italic">{s.address}</address></span>
-      </div>
-      {s.legalName && <p class="px-1 text-sm text-ink-soft">{s.legalName}</p>}
-    </div>
+  <PageHeader label="İletişim" title="Bize ulaşın" intro="Projeniz için teklif, bilgi ya da görüşme talepleriniz için arayın, yazın ya da ofisimize uğrayın." />
+  <section class="wrap grid gap-12 py-16 md:py-20 lg:grid-cols-[1fr_1.5fr] lg:gap-20">
+    <dl class="facts content-start">
+      <div><dt>Adres</dt><dd><address class="not-italic">{s.address}</address></dd></div>
+      {phones.map((p, i) => <div><dt>Telefon{phones.length > 1 ? ` ${i + 1}` : ""}</dt><dd><a href={telHref(p)} class="mono text-ink no-underline hover:text-brand">{p}</a></dd></div>)}
+      {s.fax && <div><dt>Faks</dt><dd class="mono">{s.fax}</dd></div>}
+      <div><dt>E-posta</dt><dd><a href={`mailto:${s.email}`} class="mono text-ink no-underline hover:text-brand">{s.email}</a></dd></div>
+      {s.legalName && <div><dt>Unvan</dt><dd class="text-ink-soft">{s.legalName}</dd></div>}
+    </dl>
     {s.mapUrl && (
-      <div class="min-h-96 overflow-hidden rounded-md border border-line bg-mist">
-        <iframe class="h-full min-h-96 w-full" src={s.mapUrl} title={`${s.companyName}: harita`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      <div class="min-h-96 overflow-hidden bg-mist">
+        <iframe class="h-full min-h-96 w-full grayscale" src={s.mapUrl} title={`${s.companyName}: harita`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
       </div>
     )}
   </section>

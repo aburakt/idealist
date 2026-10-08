@@ -1,5 +1,4 @@
 ---
-import Flow from "../../components/Flow.astro"
 import Photo from "../../components/Photo.astro"
 import PostCard from "../../components/PostCard.astro"
 import RichText from "../../components/RichText.astro"
@@ -36,29 +35,30 @@ const ld = JSON.stringify({
 <Base title={post.title} path={path} description={post.excerpt || undefined} image={image}>
   <script type="application/ld+json" set:html={ld} />
   <article>
-    <header class="night relative isolate overflow-hidden">
-      <Flow class="-z-20" />
-      <div class="night-fade pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
-      <div class="mx-auto max-w-3xl px-5 py-14 md:py-20">
-        <nav aria-label="Sayfa yolu" class="text-sm"><a href="/blog/" class="font-semibold text-white/65 no-underline hover:text-white">Blog</a></nav>
-        <h1 class="rise mt-5 text-[clamp(1.9rem,4.2vw,3rem)]">{post.title}</h1>
-        <p class="rise d1 mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-white/70">
-          {post.category && <span class="chip">{post.category}</span>}
-          <time datetime={post.date}>{formatDate(post.date)}</time>
-        </p>
+    <header class="wrap pb-10 pt-12 md:pt-16">
+      <div class="mx-auto max-w-3xl">
+        <nav aria-label="Sayfa yolu" class="label"><a href="/blog/" class="text-ink-soft no-underline hover:text-ink">Blog</a>{post.category && <> / {post.category}</>}</nav>
+        <h1 class="fade mt-5 text-[clamp(2rem,4.4vw,3.25rem)]">{post.title}</h1>
+        <p class="mono mt-5 text-sm text-ink-soft"><time datetime={post.date}>{formatDate(post.date)}</time> · {settings.companyName}</p>
       </div>
     </header>
-    <div class="mx-auto max-w-3xl px-5 py-12 md:py-16">
-      {post.cover && <Photo img={post.cover} alt="" width={1200} sizes="(min-width: 768px) 720px, 100vw" class="mb-10 aspect-[16/9] w-full rounded-lg object-cover" loading="eager" />}
-      {post.excerpt && <p class="mb-8 text-xl leading-relaxed text-ink-soft">{post.excerpt}</p>}
-      <RichText html={post.body} />
+    {post.cover && (
+      <div class="wrap">
+        <Photo img={post.cover} alt="" width={1600} sizes="(min-width: 1312px) 1248px, 100vw" class="aspect-[21/9] w-full bg-mist object-cover" loading="eager" />
+      </div>
+    )}
+    <div class="wrap py-12 md:py-16">
+      <div class="mx-auto max-w-3xl">
+        {post.excerpt && <p class="mb-8 text-xl leading-relaxed text-ink-soft">{post.excerpt}</p>}
+        <RichText html={post.body} />
+      </div>
     </div>
   </article>
   {more.length > 0 && (
-    <section class="border-t border-line bg-mist">
-      <div class="wrap py-16">
-        <h2 class="text-2xl">Diğer yazılar</h2>
-        <div class="mt-8 grid gap-6 md:grid-cols-3">{more.map((p) => <PostCard post={p} />)}</div>
+    <section class="border-t border-line bg-canvas">
+      <div class="wrap py-16 md:py-20">
+        <p class="label">Diğer yazılar</p>
+        <div class="mt-6 border-b border-line">{more.map((p) => <PostCard post={p} />)}</div>
       </div>
     </section>
   )}

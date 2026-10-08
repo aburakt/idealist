@@ -1,21 +1,21 @@
 ---
 import Photo from "./Photo.astro"
-import { formatM2, projectMeta } from "../lib/format"
+import { formatM2 } from "../lib/format"
 import type { Project } from "../lib/types"
 
-interface Props { project: Project; large?: boolean; eager?: boolean }
-const { project: p, large = false, eager = false } = Astro.props
+// aspect: yan yana farklı genişlikteki kartların görsel yükseklikleri eşit olsun diye dışarıdan verilebilir
+interface Props { project: Project; large?: boolean; eager?: boolean; sizes?: string; aspect?: string }
+const { project: p, large = false, eager = false, sizes, aspect } = Astro.props
 const cover = p.images[0]
+const meta = [p.location, p.year ? String(p.year) : ""].filter(Boolean).join(" · ")
 ---
-<a href={`/projeler/${p.slug}/`} class="project-card group block text-ink no-underline">
-  <div class:list={["overflow-hidden rounded-md bg-mist", large ? "aspect-[16/10]" : "aspect-[4/3]"]}>
-    {cover && <Photo img={cover} alt={p.name} class="size-full object-cover" width={large ? 1200 : 800} sizes={large ? "(min-width: 1024px) 50vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"} loading={eager ? "eager" : "lazy"} />}
+<a href={`/projeler/${p.slug}/`} class="photo group block text-ink no-underline">
+  <div class:list={["overflow-hidden bg-mist", aspect ?? (large ? "aspect-[3/2]" : "aspect-[4/3]")]}>
+    {cover && <Photo img={cover} alt={p.name} class="size-full object-cover" width={large ? 1400 : 800} sizes={sizes ?? (large ? "(min-width: 1024px) 66vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw")} loading={eager ? "eager" : "lazy"} />}
   </div>
-  <div class="mt-4 flex items-start justify-between gap-4">
-    <div class="min-w-0">
-      <h3 class:list={["font-bold group-hover:text-brand", large ? "text-xl" : "text-lg"]}>{p.name}</h3>
-      {projectMeta(p) && <p class="mt-1 text-sm text-ink-soft">{projectMeta(p)}</p>}
-    </div>
-    {p.areaM2 && <p class="shrink-0 whitespace-nowrap pt-0.5 text-sm font-semibold tabular-nums text-ink-soft">{formatM2(p.areaM2)}</p>}
+  <div class="mt-3 flex items-baseline justify-between gap-4 border-t border-transparent">
+    <h3 class:list={["font-medium decoration-brand underline-offset-4 group-hover:underline", large ? "text-xl" : "text-[1.05rem]"]}>{p.name}</h3>
+    {p.areaM2 && <p class="mono shrink-0 whitespace-nowrap text-xs text-ink-soft">{formatM2(p.areaM2)}</p>}
   </div>
+  {(p.usage || meta) && <p class="mt-1 text-sm text-ink-soft">{[p.usage, meta].filter(Boolean).join(" · ")}</p>}
 </a>

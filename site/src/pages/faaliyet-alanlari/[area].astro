@@ -16,11 +16,11 @@ const site = await loadSite()
 const list = projectsIn(site, area.slug)
 ---
 <Base title={area.title} path={`/faaliyet-alanlari/${area.slug}/`} description={`${site.settings.companyName}: ${area.title} alanındaki mekanik tesisat tasarım ve müşavirlik projeleri.`}>
-  <PageHeader eyebrow="Faaliyet alanı" title={area.title} intro={`${list.length} proje`} />
+  <PageHeader label={`Faaliyet alanı · ${list.length} proje`} title={area.title} />
   <AreaNav current={area.slug} />
-  <section class="wrap py-16">
+  <section class="wrap py-14">
     {list.length === 0
-      ? <p class="text-lg text-ink-soft">Bu alanda henüz yayında proje yok. <a href="/projeler/" class="text-brand">Tüm projeler</a></p>
-      : <div class="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{list.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}</div>}
+      ? <p class="text-lg text-ink-soft">Bu alanda henüz yayında proje yok. <a href="/projeler/" class="link">Tüm projeler</a></p>
+      : <div class="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{list.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}</div>}
   </section>
 </Base>

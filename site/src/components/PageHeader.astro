@@ -1,18 +1,16 @@
 ---
-import Flow from "./Flow.astro"
-
-// Sayfa üst bandı: koyu grafit zemin üzerinde akış animasyonu. Gövde açık taş tonunda kalır (dengeli tema).
-interface Props { eyebrow?: string; title: string; intro?: string }
-const { eyebrow, title, intro } = Astro.props
+// Sayfa başlığı: sade, beyaz zemin. Numaralı etiket + büyük başlık + kısa giriş; altında ince çizgi.
+interface Props { label?: string; title: string; intro?: string }
+const { label, title, intro } = Astro.props
 ---
-<section class="night relative isolate overflow-hidden">
-  <Flow class="-z-20" />
-  <div class="night-fade pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
-  <div class="wrap py-14 md:py-20">
+<section class="border-b border-line">
+  <div class="wrap pb-12 pt-14 md:pb-16 md:pt-20">
     <slot name="before" />
-    {eyebrow && <p class="eyebrow rise">{eyebrow}</p>}
-    <h1 class="rise d1 mt-4 max-w-[24ch] text-[clamp(2rem,4.5vw,3.25rem)]">{title}</h1>
-    {intro && <p class="rise d2 mt-4 max-w-[62ch] text-lg text-white/70">{intro}</p>}
+    {label && <p class="label fade">{label}</p>}
+    <div class="mt-5 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-end lg:gap-16">
+      <h1 class="fade text-[clamp(2.2rem,5vw,4rem)]">{title}</h1>
+      {intro && <p class="fade max-w-[52ch] text-lg text-ink-soft">{intro}</p>}
+    </div>
     <slot />
   </div>
 </section>

@@ -1,5 +1,4 @@
 ---
-import Flow from "../components/Flow.astro"
 import Icon from "../components/Icon.astro"
 import Photo from "../components/Photo.astro"
 import PostCard from "../components/PostCard.astro"
@@ -13,125 +12,117 @@ const { settings: s, services, areas, projects, posts } = site
 const featured = projects.filter((p) => p.featured).slice(0, 6)
 const totalM2 = projects.reduce((sum, p) => sum + (p.areaM2 ?? 0), 0)
 const millions = Math.floor(totalM2 / 100_000) / 10
+const countries = new Set(projects.map((p) => (p.areas.includes("yurt-disi") ? p.location.split(",").pop()?.trim() : "Türkiye")).filter(Boolean)).size
 const stats: [string, string][] = [
-  ...(s.foundedYear ? [[String(s.foundedYear), "yılından beri"] as [string, string]] : []),
-  [`${projects.length}+`, "proje"],
-  [String(areas.length), "faaliyet alanı"],
-  ...(millions >= 1 ? [[`${formatNumber(millions)} milyon m²+`, "toplam proje alanı"] as [string, string]] : []),
+  ...(s.foundedYear ? [[String(s.foundedYear), "Kuruluş"] as [string, string]] : []),
+  [String(projects.length), "Proje"],
+  ...(millions >= 1 ? [[`${formatNumber(millions)} milyon m²`, "Toplam proje alanı"] as [string, string]] : []),
+  ...(countries > 1 ? [[String(countries), "Ülke"] as [string, string]] : [[String(areas.length), "Faaliyet alanı"] as [string, string]]),
 ]
+// seçili projeler: geniş ve dar kartlar sırayla (7/5, 5/7) yan yana; görsel yükseklikleri eşit (7 x 2/3 = 5 x 14/15)
+const wide = (i: number) => i % 4 === 0 || i % 4 === 3
 ---
 <Base title="Ana sayfa" path="/">
-  <section class="night relative isolate overflow-hidden">
-    <Flow class="-z-20" />
-    <div class="night-fade pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
-    <div class="wrap grid items-center gap-10 py-14 md:py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:py-24">
-      <div>
-        {s.tagline && <p class="eyebrow rise">{s.tagline}</p>}
-        <h1 class="rise d1 mt-5 text-[clamp(2.1rem,4.6vw,3.6rem)]">{s.heroTitle}</h1>
-        {s.heroText && <p class="rise d2 mt-5 max-w-[54ch] text-lg text-white/72">{s.heroText}</p>}
-        <div class="rise d3 mt-8 flex flex-wrap gap-3">
-          <a href="/projeler/" class="btn btn-brand">Projelerimiz<Icon name="arrow-right" /></a>
-          <a href="/iletisim/" class="btn btn-glass">İletişim</a>
-        </div>
-      </div>
-      {s.heroImage && (
-        <div class="rise d2 relative">
-          <div class="aspect-[4/3] overflow-hidden rounded-lg ring-1 ring-white/12 shadow-[0_40px_80px_-30px_oklch(0_0_0/0.7)]">
-            <Photo img={s.heroImage} alt="" class="size-full object-cover" width={1400} sizes="(min-width: 1024px) 52vw, 100vw" loading="eager" />
-          </div>
-        </div>
-      )}
-    </div>
-    <div class="border-t border-white/10">
-      <dl class="wrap grid grid-cols-2 lg:grid-cols-4">
-        {stats.map(([value, label], i) => (
-          <div class:list={["py-6 pr-4 sm:py-8", i % 2 === 1 && "border-l border-white/10 pl-5 lg:pl-8", i >= 2 && "border-t border-white/10 lg:border-t-0", i === 2 && "lg:border-l lg:pl-8"]}>
-            <dt class="text-[clamp(1.4rem,2.6vw,2rem)] font-bold leading-tight tabular-nums text-white">{value}</dt>
-            <dd class="mt-1 text-sm text-white/60">{label}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  </section>
-
-  <section class="wrap grid gap-10 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-    <div>
-      <p class="eyebrow">Hakkımızda</p>
-      <h2 class="mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)]">Sağlıklı yarınlar için sürdürülebilir mühendislik</h2>
-    </div>
-    <div>
-      <p class="text-lg leading-relaxed text-ink-soft">{s.aboutSummary}</p>
-      <a href="/hakkimizda/" class="btn btn-outline mt-7">Devamını okuyun<Icon name="arrow-right" /></a>
-    </div>
-  </section>
-
-  <section id="hizmetler" class="scroll-mt-20 border-y border-line bg-mist">
-    <div class="wrap py-20">
-      <p class="eyebrow">Hizmetler</p>
-      <h2 class="mt-4 max-w-[26ch] text-[clamp(1.8rem,3.4vw,2.6rem)]">Tasarımdan uygulamaya tek ekip</h2>
-      <div class="mt-12 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        {services.map((x, i) => (
-          <article class="bg-paper p-7">
-            <div class="flex items-center justify-between">
-              <Icon name={x.icon} class="size-9 text-brand" />
-              <span class="text-sm font-semibold tabular-nums text-steel">0{i + 1}</span>
-            </div>
-            <h3 class="mt-8 text-lg">{x.title}</h3>
-            {x.summary && <p class="mt-2 text-[0.95rem] text-ink-soft">{x.summary}</p>}
-          </article>
-        ))}
+  <section class="wrap pb-10 pt-14 md:pt-20">
+    {s.tagline && <p class="label fade">{s.tagline}</p>}
+    <div class="mt-6 grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:items-end lg:gap-20">
+      <h1 class="fade text-[clamp(2.3rem,5.4vw,4.6rem)]">{s.heroTitle}</h1>
+      <div class="fade">
+        {s.heroText && <p class="max-w-[46ch] text-lg text-ink-soft">{s.heroText}</p>}
+        <p class="mt-6 flex flex-wrap gap-x-8 gap-y-3">
+          <a href="/projeler/" class="link">Projelerimiz<Icon name="arrow-right" /></a>
+          <a href="/iletisim/" class="link">İletişim<Icon name="arrow-right" /></a>
+        </p>
       </div>
     </div>
   </section>
 
-  <section class="wrap py-20">
+  {s.heroImage && (
+    <div class="wrap fade">
+      <div class="aspect-[16/10] overflow-hidden bg-mist md:aspect-[21/9]">
+        <Photo img={s.heroImage} alt="" class="size-full object-cover" width={2000} sizes="(min-width: 1312px) 1248px, 100vw" loading="eager" />
+      </div>
+    </div>
+  )}
+
+  <section class="wrap">
+    <dl class="grid grid-cols-2 border-b border-line lg:grid-cols-4">
+      {stats.map(([value, label], i) => (
+        <div class:list={["py-7 md:py-9", i % 2 === 1 && "pl-5 lg:pl-0", i >= 2 && "border-t border-line lg:border-t-0"]}>
+          <dt class="label">{label}</dt>
+          <dd class="mono mt-2 text-[clamp(1.5rem,2.6vw,2.1rem)] font-medium leading-tight text-ink">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section class="wrap py-20 md:py-28">
     <div class="flex flex-wrap items-end justify-between gap-6">
       <div>
-        <p class="eyebrow">Öne çıkan projeler</p>
-        <h2 class="mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)]">Yurt içinde ve yurt dışında</h2>
+        <p class="label"><span class="label-num">01</span>Seçili projeler</p>
+        <h2 class="mt-4 max-w-[22ch] text-[clamp(1.8rem,3.4vw,2.75rem)]">Yurt içinde ve yurt dışında</h2>
       </div>
-      <a href="/projeler/" class="btn btn-outline">Tüm projeler<Icon name="arrow-right" /></a>
+      <a href="/projeler/" class="link">Tüm projeler ({projects.length})<Icon name="arrow-right" /></a>
     </div>
-    <div class="mt-12 grid gap-x-8 gap-y-12 md:grid-cols-2">
-      {featured.map((p) => <ProjectCard project={p} large />)}
+    <div class="mt-12 grid gap-x-8 gap-y-14 lg:grid-cols-12">
+      {featured.map((p, i) => (
+        <div class={wide(i) ? "lg:col-span-7" : "lg:col-span-5"}>
+          <ProjectCard project={p} large aspect={wide(i) ? "aspect-[3/2]" : "aspect-[3/2] lg:aspect-[15/14]"} sizes={wide(i) ? "(min-width: 1024px) 58vw, 100vw" : "(min-width: 1024px) 42vw, 100vw"} />
+        </div>
+      ))}
     </div>
   </section>
 
-  <section class="grid-paper border-y border-line">
-    <div class="wrap py-20">
-      <p class="eyebrow">Faaliyet alanları</p>
-      <h2 class="mt-4 max-w-[28ch] text-[clamp(1.8rem,3.4vw,2.6rem)]">Hastaneden konuta, ofisten sanayiye</h2>
-      <ul class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {areas.map((a) => {
-          const count = projectsIn(site, a.slug).length
-          return (
-            <li>
-              <a href={`/faaliyet-alanlari/${a.slug}/`} class="card group flex h-full items-center gap-4 p-5 text-ink no-underline transition-colors hover:border-ink">
-                <span class="grid size-12 shrink-0 place-items-center rounded-md bg-brand-soft text-brand"><Icon name={a.icon} class="size-6" /></span>
-                <span class="min-w-0 flex-1">
-                  <span class="block font-semibold leading-snug">{a.title}</span>
-                  <span class="mt-0.5 block text-sm text-ink-soft">{count} proje</span>
-                </span>
-                <Icon name="arrow-right" class="size-5 shrink-0 text-steel transition-transform group-hover:translate-x-1 group-hover:text-brand" />
-              </a>
-            </li>
-          )
-        })}
-      </ul>
+  <section id="hizmetler" class="scroll-mt-24 bg-canvas">
+    <div class="wrap grid gap-12 py-20 md:py-28 lg:grid-cols-[1fr_2fr] lg:gap-20">
+      <div>
+        <p class="label"><span class="label-num">02</span>Hizmetler</p>
+        <h2 class="mt-4 max-w-[16ch] text-[clamp(1.8rem,3.4vw,2.75rem)]">Tasarımdan uygulamaya tek ekip</h2>
+        <a href="/hakkimizda/" class="link mt-8">Hakkımızda<Icon name="arrow-right" /></a>
+      </div>
+      <ol class="grid sm:grid-cols-2 sm:gap-x-10">
+        {services.map((x, i) => (
+          <li class="border-t border-ink/15 py-7">
+            <p class="mono text-sm text-brand">{String(i + 1).padStart(2, "0")}</p>
+            <h3 class="mt-3 text-xl font-medium">{x.title}</h3>
+            {x.summary && <p class="mt-2 text-ink-soft">{x.summary}</p>}
+          </li>
+        ))}
+      </ol>
     </div>
+  </section>
+
+  <section class="wrap py-20 md:py-28">
+    <p class="label"><span class="label-num">03</span>Faaliyet alanları</p>
+    <h2 class="mt-4 max-w-[24ch] text-[clamp(1.8rem,3.4vw,2.75rem)]">Hastaneden konuta, ofisten sanayiye</h2>
+    <ul class="mt-12 grid sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-3">
+      {areas.map((a) => {
+        const count = projectsIn(site, a.slug).length
+        return (
+          <li class="border-t border-line">
+            <a href={`/faaliyet-alanlari/${a.slug}/`} class="group flex items-baseline justify-between gap-4 py-4 text-ink no-underline">
+              <span class="decoration-brand underline-offset-4 group-hover:underline">{a.title}</span>
+              <span class="mono text-sm text-ink-soft">{String(count).padStart(2, "0")}</span>
+            </a>
+          </li>
+        )
+      })}
+    </ul>
   </section>
 
   {posts.length > 0 && (
-    <section class="wrap py-20">
-      <div class="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <p class="eyebrow">Blog</p>
-          <h2 class="mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)]">Mekanik tesisat üzerine yazılar</h2>
+    <section class="border-t border-line">
+      <div class="wrap py-20 md:py-28">
+        <div class="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p class="label"><span class="label-num">04</span>Yazılar</p>
+            <h2 class="mt-4 text-[clamp(1.8rem,3.4vw,2.75rem)]">Mekanik tesisat üzerine notlar</h2>
+          </div>
+          <a href="/blog/" class="link">Tüm yazılar<Icon name="arrow-right" /></a>
         </div>
-        <a href="/blog/" class="btn btn-outline">Tüm yazılar<Icon name="arrow-right" /></a>
-      </div>
-      <div class="mt-12 grid gap-6 md:grid-cols-3">
-        {posts.slice(0, 3).map((p) => <PostCard post={p} />)}
+        <div class="mt-10 border-b border-line">
+          {posts.slice(0, 3).map((p) => <PostCard post={p} />)}
+        </div>
       </div>
     </section>
   )}
