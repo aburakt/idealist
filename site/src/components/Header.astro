@@ -1,0 +1,42 @@
+---
+import Icon from "./Icon.astro"
+import Logo from "./Logo.astro"
+import { telHref } from "../lib/format"
+import { loadSite } from "../lib/content"
+
+interface Props { lang?: "tr" | "en" }
+const { lang = "tr" } = Astro.props
+const { settings } = await loadSite()
+const en = lang === "en"
+const nav: [string, string][] = en
+  ? [["About", "/en/#about"], ["Services", "/en/#services"], ["Fields", "/en/#fields"], ["Projects", "/projeler/"], ["Contact", "/en/#contact"]]
+  : [["Hakkımızda", "/hakkimizda/"], ["Hizmetler", "/#hizmetler"], ["Projeler", "/projeler/"], ["İletişim", "/iletisim/"]]
+const path = Astro.url.pathname
+const current = (href: string) => href !== "/" && !href.includes("#") && path.startsWith(href)
+---
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-white">{en ? "Skip to content" : "İçeriğe geç"}</a>
+<header class="sticky top-0 z-40 border-b border-line bg-paper/92 backdrop-blur">
+  <nav class="wrap flex h-18 items-center justify-between gap-6" aria-label={en ? "Main menu" : "Ana menü"}>
+    <a href={en ? "/en/" : "/"} class="block shrink-0" aria-label={en ? "Idealist Engineering home" : "İdealist Mühendislik ana sayfa"}><Logo class="h-9 w-auto md:h-10" /></a>
+    <ul class="hidden items-center gap-8 text-[0.95rem] font-semibold lg:flex">
+      {nav.map(([label, href]) => (
+        <li><a href={href} aria-current={current(href) ? "page" : undefined} class="text-ink-soft no-underline hover:text-ink aria-[current=page]:text-brand">{label}</a></li>
+      ))}
+    </ul>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <a href={en ? "/" : "/en/"} lang={en ? "tr" : "en"} hreflang={en ? "tr" : "en"} class="btn btn-sm btn-outline" aria-label={en ? "Türkçe" : "English"}>{en ? "TR" : "EN"}</a>
+      <a href={telHref(settings.phone)} class="btn btn-brand btn-sm hidden md:inline-flex"><Icon name="phone" />{settings.phone}</a>
+      <details class="group relative lg:hidden">
+        <summary class="grid size-11 cursor-pointer list-none place-items-center rounded-md border border-line [&::-webkit-details-marker]:hidden" aria-label={en ? "Menu" : "Menü"}>
+          <Icon name="menu" class="size-5 group-open:hidden" /><Icon name="close" class="hidden size-5 group-open:block" />
+        </summary>
+        <div class="absolute right-0 top-14 w-72 rounded-lg border border-line bg-paper p-3 shadow-xl">
+          <ul class="grid gap-1 font-semibold">
+            {nav.map(([label, href]) => <li><a href={href} class="block rounded-md px-4 py-3 text-ink no-underline hover:bg-mist">{label}</a></li>)}
+            <li class="md:hidden"><a href={telHref(settings.phone)} class="btn btn-brand mt-2 w-full justify-center"><Icon name="phone" />{settings.phone}</a></li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,29 @@
+---
+import AreaNav from "../../components/AreaNav.astro"
+import ContactBand from "../../components/ContactBand.astro"
+import PageHeader from "../../components/PageHeader.astro"
+import ProjectCard from "../../components/ProjectCard.astro"
+import Base from "../../layouts/Base.astro"
+import { loadSite, projectsIn } from "../../lib/content"
+import type { Area } from "../../lib/types"
+
+export async function getStaticPaths() {
+  const { areas } = await loadSite()
+  return areas.map((area) => ({ params: { area: area.slug }, props: { area } }))
+}
+interface Props { area: Area }
+const { area } = Astro.props
+const site = await loadSite()
+const list = projectsIn(site, area.slug)
+---
+<Base title={area.title} path={`/faaliyet-alanlari/${area.slug}/`} description={`${site.settings.companyName}: ${area.title} alanındaki mekanik tesisat tasarım ve müşavirlik projeleri.`}>
+  <PageHeader eyebrow="Faaliyet alanı" title={area.title} intro={`${list.length} proje`}>
+    <AreaNav current={area.slug} />
+  </PageHeader>
+  <section class="wrap py-16">
+    {list.length === 0
+      ? <p class="text-lg text-ink-soft">Bu alanda henüz yayında proje yok. <a href="/projeler/" class="text-brand">Tüm projeler</a></p>
+      : <div class="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">{list.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}</div>}
+  </section>
+  <ContactBand />
+</Base>

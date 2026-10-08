@@ -1,0 +1,49 @@
+---
+import Icon from "./Icon.astro"
+import Logo from "./Logo.astro"
+import { telHref } from "../lib/format"
+import { loadSite } from "../lib/content"
+
+interface Props { lang?: "tr" | "en" }
+const { lang = "tr" } = Astro.props
+const en = lang === "en"
+const { settings: s, areas } = await loadSite()
+const year = new Date().getFullYear()
+---
+<footer class="bg-night text-white/75">
+  <div class="wrap grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.2fr]">
+    <div>
+      <span class="inline-block rounded-md bg-white px-4 py-3"><Logo class="h-9 w-auto" /></span>
+      {!en && s.footerText && <p class="mt-5 max-w-[40ch]">{s.footerText}</p>}
+      {s.legalName && <p class="mt-4 max-w-[46ch] text-sm text-white/55">{s.legalName}</p>}
+    </div>
+    <div>
+      <p class="text-sm font-bold uppercase tracking-[0.14em] text-white">{en ? "Fields of activity" : "Faaliyet alanları"}</p>
+      <ul class="mt-4 grid gap-1.5 text-[0.95rem]">
+        {areas.slice(0, 8).map((a) => <li><a href={`/faaliyet-alanlari/${a.slug}/`} class="text-white/75 no-underline hover:text-white">{en && a.titleEn ? a.titleEn : a.title}</a></li>)}
+        <li><a href="/projeler/" class="font-semibold text-white no-underline hover:underline">{en ? "All projects" : "Tüm projeler"}</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-sm font-bold uppercase tracking-[0.14em] text-white">{en ? "Contact" : "İletişim"}</p>
+      <ul class="mt-4 grid gap-3">
+        <li class="flex gap-3"><Icon name="pin" class="mt-1 size-4.5 shrink-0 text-brand" /><address class="not-italic">{s.address}</address></li>
+        {[s.phone, s.phone2].filter(Boolean).map((p) => (
+          <li><a href={telHref(p)} class="inline-flex items-center gap-3 font-semibold text-white no-underline hover:underline"><Icon name="phone" class="size-4.5 text-brand" />{p}</a></li>
+        ))}
+        {s.fax && <li class="inline-flex items-center gap-3"><Icon name="fax" class="size-4.5 text-brand" />{en ? "Fax" : "Faks"}: {s.fax}</li>}
+        <li><a href={`mailto:${s.email}`} class="inline-flex items-center gap-3 font-semibold text-white no-underline hover:underline"><Icon name="mail" class="size-4.5 shrink-0 text-brand" />{s.email}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="wrap flex flex-col gap-3 py-5 text-sm text-white/55 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} {s.companyName}</p>
+      <ul class="flex gap-5">
+        <li><a href={en ? "/en/" : "/hakkimizda/"} class="text-white/55 no-underline hover:text-white">{en ? "About" : "Hakkımızda"}</a></li>
+        <li><a href={en ? "/en/#contact" : "/iletisim/"} class="text-white/55 no-underline hover:text-white">{en ? "Contact" : "İletişim"}</a></li>
+        <li><a href={en ? "/" : "/en/"} lang={en ? "tr" : "en"} class="text-white/55 no-underline hover:text-white">{en ? "Türkçe" : "English"}</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>

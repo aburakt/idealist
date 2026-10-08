@@ -1,0 +1,30 @@
+---
+import ContactBand from "../components/ContactBand.astro"
+import Icon from "../components/Icon.astro"
+import PageHeader from "../components/PageHeader.astro"
+import RichText from "../components/RichText.astro"
+import Base from "../layouts/Base.astro"
+import { loadSite, pageOf } from "../lib/content"
+
+const site = await loadSite()
+const page = pageOf(site, "hakkimizda")
+const { services } = site
+---
+<Base title={page.title} path="/hakkimizda/" description={page.seoDescription}>
+  <PageHeader eyebrow="Kurumsal" title={page.title} intro={site.settings.tagline} />
+  <section class="wrap grid gap-14 py-16 lg:grid-cols-[1.5fr_1fr]">
+    <RichText html={page.body} class="max-w-[68ch]" />
+    <aside class="lg:pt-2">
+      <div class="card sticky top-24 p-6">
+        <p class="text-sm font-bold uppercase tracking-[0.14em] text-ink-soft">Hizmetler</p>
+        <ul class="mt-4 grid gap-4">
+          {services.map((x) => (
+            <li class="flex items-start gap-3"><Icon name={x.icon} class="mt-0.5 size-6 shrink-0 text-brand" /><span class="font-semibold">{x.title}</span></li>
+          ))}
+        </ul>
+        <a href="/projeler/" class="btn btn-brand mt-7 w-full justify-center">Projelerimiz<Icon name="arrow-right" /></a>
+      </div>
+    </aside>
+  </section>
+  <ContactBand />
+</Base>

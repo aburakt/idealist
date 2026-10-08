@@ -1,0 +1,4 @@
+# Eski statik sitenin adresleri (index.html, projects.html, en.html) -> yeni adresler
+/index.html / 301
+/projects.html /projeler/ 301
+/en.html /en/ 301

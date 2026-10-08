@@ -1,0 +1,123 @@
+---
+import ContactBand from "../components/ContactBand.astro"
+import Icon from "../components/Icon.astro"
+import Photo from "../components/Photo.astro"
+import ProjectCard from "../components/ProjectCard.astro"
+import Base from "../layouts/Base.astro"
+import { loadSite, projectsIn } from "../lib/content"
+import { formatNumber } from "../lib/format"
+
+const site = await loadSite()
+const { settings: s, services, areas, projects } = site
+const featured = projects.filter((p) => p.featured).slice(0, 6)
+const totalM2 = projects.reduce((sum, p) => sum + (p.areaM2 ?? 0), 0)
+const millions = Math.floor(totalM2 / 100_000) / 10
+const stats: [string, string][] = [
+  ...(s.foundedYear ? [[String(s.foundedYear), "yılından beri"] as [string, string]] : []),
+  [`${projects.length}+`, "proje"],
+  [String(areas.length), "faaliyet alanı"],
+  ...(millions >= 1 ? [[`${formatNumber(millions)} milyon m²+`, "toplam proje alanı"] as [string, string]] : []),
+]
+---
+<Base title="Ana sayfa" path="/">
+  <section class="relative overflow-hidden border-b border-line">
+    <div class="wrap grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-14 lg:py-20">
+      <div>
+        {s.tagline && <p class="eyebrow rise">{s.tagline}</p>}
+        <h1 class="rise d1 mt-5 text-[clamp(2.1rem,4.6vw,3.6rem)]">{s.heroTitle}</h1>
+        {s.heroText && <p class="rise d2 mt-5 max-w-[54ch] text-lg text-ink-soft">{s.heroText}</p>}
+        <div class="rise d3 mt-8 flex flex-wrap gap-3">
+          <a href="/projeler/" class="btn btn-brand">Projelerimiz<Icon name="arrow-right" /></a>
+          <a href="/iletisim/" class="btn btn-outline">İletişim</a>
+        </div>
+      </div>
+      {s.heroImage && (
+        <div class="rise d2 relative">
+          <div class="grid-paper absolute -inset-4 -z-10 rounded-lg md:-inset-6" aria-hidden="true"></div>
+          <div class="aspect-[4/3] overflow-hidden rounded-md shadow-[0_24px_60px_-28px_oklch(0.21_0.008_255/0.45)]">
+            <Photo img={s.heroImage} alt="" class="size-full object-cover" width={1400} sizes="(min-width: 1024px) 55vw, 100vw" loading="eager" />
+          </div>
+        </div>
+      )}
+    </div>
+    <div class="border-t border-line bg-paper">
+      <dl class="wrap grid grid-cols-2 lg:grid-cols-4">
+        {stats.map(([value, label], i) => (
+          <div class:list={["py-6 pr-4 sm:py-8", i % 2 === 1 && "border-l border-line pl-5 lg:pl-8", i >= 2 && "border-t border-line lg:border-t-0", i === 2 && "lg:border-l lg:pl-8"]}>
+            <dt class="text-[clamp(1.4rem,2.6vw,2rem)] font-bold leading-tight tabular-nums text-ink">{value}</dt>
+            <dd class="mt-1 text-sm text-ink-soft">{label}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="wrap grid gap-10 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+    <div>
+      <p class="eyebrow">Hakkımızda</p>
+      <h2 class="mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)]">Sağlıklı yarınlar için sürdürülebilir mühendislik</h2>
+    </div>
+    <div>
+      <p class="text-lg leading-relaxed text-ink-soft">{s.aboutSummary}</p>
+      <a href="/hakkimizda/" class="btn btn-outline mt-7">Devamını okuyun<Icon name="arrow-right" /></a>
+    </div>
+  </section>
+
+  <section id="hizmetler" class="scroll-mt-20 border-y border-line bg-mist">
+    <div class="wrap py-20">
+      <p class="eyebrow">Hizmetler</p>
+      <h2 class="mt-4 max-w-[26ch] text-[clamp(1.8rem,3.4vw,2.6rem)]">Tasarımdan uygulamaya tek ekip</h2>
+      <div class="mt-12 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        {services.map((x, i) => (
+          <article class="bg-paper p-7">
+            <div class="flex items-center justify-between">
+              <Icon name={x.icon} class="size-9 text-brand" />
+              <span class="text-sm font-semibold tabular-nums text-steel">0{i + 1}</span>
+            </div>
+            <h3 class="mt-8 text-lg">{x.title}</h3>
+            {x.summary && <p class="mt-2 text-[0.95rem] text-ink-soft">{x.summary}</p>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap py-20">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <p class="eyebrow">Öne çıkan projeler</p>
+        <h2 class="mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)]">Yurt içinde ve yurt dışında</h2>
+      </div>
+      <a href="/projeler/" class="btn btn-outline">Tüm projeler<Icon name="arrow-right" /></a>
+    </div>
+    <div class="mt-12 grid gap-x-8 gap-y-12 md:grid-cols-2">
+      {featured.map((p) => <ProjectCard project={p} large />)}
+    </div>
+  </section>
+
+  <section class="grid-paper border-y border-line">
+    <div class="wrap py-20">
+      <p class="eyebrow">Faaliyet alanları</p>
+      <h2 class="mt-4 max-w-[28ch] text-[clamp(1.8rem,3.4vw,2.6rem)]">Hastaneden konuta, ofisten sanayiye</h2>
+      <ul class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {areas.map((a) => {
+          const count = projectsIn(site, a.slug).length
+          return (
+            <li>
+              <a href={`/faaliyet-alanlari/${a.slug}/`} class="card group flex h-full items-center gap-4 p-5 text-ink no-underline transition-colors hover:border-ink">
+                <span class="grid size-12 shrink-0 place-items-center rounded-md bg-brand-soft text-brand"><Icon name={a.icon} class="size-6" /></span>
+                <span class="min-w-0 flex-1">
+                  <span class="block font-semibold leading-snug">{a.title}</span>
+                  <span class="mt-0.5 block text-sm text-ink-soft">{count} proje</span>
+                </span>
+                <Icon name="arrow-right" class="size-5 shrink-0 text-steel transition-transform group-hover:translate-x-1 group-hover:text-brand" />
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  </section>
+
+  <ContactBand />
+</Base>

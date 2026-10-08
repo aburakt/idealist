@@ -1,0 +1,121 @@
+---
+import { getImage } from "astro:assets"
+import ContactBand from "../../components/ContactBand.astro"
+import Icon from "../../components/Icon.astro"
+import Photo from "../../components/Photo.astro"
+import ProjectCard from "../../components/ProjectCard.astro"
+import Base from "../../layouts/Base.astro"
+import { loadSite } from "../../lib/content"
+import { formatM2, paragraphs } from "../../lib/format"
+import { isRemoteRaster, remoteDims, shareImageUrl } from "../../lib/image"
+import type { Img, Project } from "../../lib/types"
+
+export async function getStaticPaths() {
+  const { projects } = await loadSite()
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }))
+}
+interface Props { project: Project }
+const { project: p } = Astro.props
+const site = await loadSite()
+const areas = site.areas.filter((a) => p.areas.includes(a.slug))
+const facts: [string, string][] = [
+  ["Kullanım", p.usage],
+  ["İşveren", p.client],
+  ["Mimari", p.architect],
+  ["Yıl", p.year ? String(p.year) : ""],
+  ["Konum", p.location],
+  ["Alan", p.areaM2 ? formatM2(p.areaM2) : ""],
+].filter((f): f is [string, string] => !!f[1])
+// galeri: büyük görüntü için en fazla 2000 px WebP (görüntüleyici açar), küçük resim sayfada
+const large = async (img: Img) => {
+  if (isRemoteRaster(img.src)) {
+    const d = await remoteDims(img.src, 2000)
+    return (await getImage({ src: img.src, width: d.width, height: d.height, format: "webp", quality: 82 })).src
+  }
+  if (typeof img.src === "string") return img.src
+  const w = Math.min(2000, img.src.width)
+  return (await getImage({ src: img.src, width: w, format: "webp", quality: 82 })).src
+}
+const full = await Promise.all(p.images.map(large))
+const [cover, ...rest] = p.images
+const related = site.projects.filter((x) => x.slug !== p.slug && x.areas.some((a) => p.areas.includes(a))).slice(0, 3)
+const share = cover ? await shareImageUrl(cover) : undefined
+const desc = [p.name, p.usage, p.location, p.areaM2 ? formatM2(p.areaM2) : ""].filter(Boolean).join(" · ") + `. ${site.settings.companyName} mekanik tesisat projesi.`
+---
+<Base title={p.name} path={`/projeler/${p.slug}/`} description={desc} image={share}>
+  <section class="grid-paper border-b border-line">
+    <div class="wrap py-10 md:py-14">
+      <nav aria-label="Sayfa yolu" class="text-sm text-ink-soft">
+        <a href="/projeler/" class="text-ink-soft no-underline hover:text-brand">Projeler</a>
+        {areas[0] && <> / <a href={`/faaliyet-alanlari/${areas[0].slug}/`} class="text-ink-soft no-underline hover:text-brand">{areas[0].title}</a></>}
+      </nav>
+      <h1 class="rise mt-4 max-w-[26ch] text-[clamp(2rem,4.5vw,3.25rem)]">{p.name}</h1>
+      {areas.length > 0 && (
+        <ul class="rise d1 mt-5 flex flex-wrap gap-2">
+          {areas.map((a) => <li><a href={`/faaliyet-alanlari/${a.slug}/`} class="inline-flex rounded-full border border-line bg-paper px-3 py-1 text-sm font-semibold text-ink no-underline hover:border-ink">{a.title}</a></li>)}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <section class="wrap grid gap-10 py-12 lg:grid-cols-[1.7fr_1fr] lg:gap-14">
+    <div data-gallery>
+      {cover && (
+        <a href={full[0]} data-gallery-item class="group relative block overflow-hidden rounded-md bg-mist">
+          <Photo img={cover} alt={p.name} class="w-full" width={1400} sizes="(min-width: 1024px) 62vw, 100vw" loading="eager" />
+          <span class="absolute bottom-3 right-3 grid size-10 place-items-center rounded-md bg-paper/90 text-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><Icon name="expand" class="size-5" /></span>
+        </a>
+      )}
+      {rest.length > 0 && (
+        <ul class="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {rest.map((img, i) => (
+            <li>
+              <a href={full[i + 1]} data-gallery-item class="block aspect-[4/3] overflow-hidden rounded-md bg-mist">
+                <Photo img={img} alt={`${p.name}, görsel ${i + 2}`} class="size-full object-cover transition-transform duration-500 hover:scale-105" width={480} sizes="(min-width: 1024px) 15vw, 30vw" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+    <aside>
+      {facts.length > 0 && (
+        <dl class="card divide-y divide-line">
+          {facts.map(([k, v]) => (
+            <div class="grid grid-cols-[7rem_1fr] gap-4 px-5 py-4">
+              <dt class="text-sm text-ink-soft">{k}</dt>
+              <dd class="font-semibold">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {paragraphs(p.summary).map((t) => <p class="mt-5 text-ink-soft">{t}</p>)}
+      <a href="/iletisim/" class="btn btn-brand mt-6">Benzer bir proje için iletişime geçin<Icon name="arrow-right" /></a>
+    </aside>
+  </section>
+
+  {related.length > 0 && (
+    <section class="border-t border-line bg-mist">
+      <div class="wrap py-16">
+        <h2 class="text-2xl">Aynı alandaki diğer projeler</h2>
+        <div class="mt-8 grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{related.map((x) => <ProjectCard project={x} />)}</div>
+      </div>
+    </section>
+  )}
+
+  <dialog class="viewer" data-viewer aria-label="Proje görselleri">
+    <div class="grid size-full grid-rows-[auto_1fr_auto]">
+      <div class="flex items-center justify-between p-4 text-sm text-white/80">
+        <span data-viewer-count></span>
+        <button type="button" data-viewer-close class="grid size-11 cursor-pointer place-items-center rounded-md text-white hover:bg-white/10" aria-label="Kapat"><Icon name="close" class="size-6" /></button>
+      </div>
+      <div class="flex min-h-0 items-center justify-center px-4"><img data-viewer-img alt="" /></div>
+      <div class="flex justify-center gap-3 p-4">
+        <button type="button" data-viewer-prev class="grid size-12 cursor-pointer place-items-center rounded-md border border-white/25 text-white hover:bg-white/10" aria-label="Önceki görsel"><Icon name="arrow-left" class="size-6" /></button>
+        <button type="button" data-viewer-next class="grid size-12 cursor-pointer place-items-center rounded-md border border-white/25 text-white hover:bg-white/10" aria-label="Sonraki görsel"><Icon name="arrow-right" class="size-6" /></button>
+      </div>
+    </div>
+  </dialog>
+  <ContactBand />
+</Base>
+<script>import "../../scripts/gallery"</script>

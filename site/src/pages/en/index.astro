@@ -1,0 +1,79 @@
+---
+import Icon from "../../components/Icon.astro"
+import Photo from "../../components/Photo.astro"
+import RichText from "../../components/RichText.astro"
+import Base from "../../layouts/Base.astro"
+import { loadSite, pageOf, projectsIn } from "../../lib/content"
+import { telHref } from "../../lib/format"
+
+// Eski sitenin en.html sayfası: tek sayfalık İngilizce özet. Metin Sayfalar > "en" kaydından, adlar *_en alanlarından gelir.
+const site = await loadSite()
+const page = pageOf(site, "en")
+const { settings: s, services, areas } = site
+const phones = [s.phone, s.phone2].filter(Boolean)
+---
+<Base title={page.title} path="/en/" lang="en" description={page.seoDescription ?? "Idealist Engineering: mechanical installation design and consultancy since 2004. Hospitals, residential, office, retail, hotel and international projects. Ankara, Türkiye."}>
+  <section class="border-b border-line">
+    <div class="wrap grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-14 lg:py-20">
+      <div>
+        <p class="eyebrow rise">Quality, modern and reliable projects</p>
+        <h1 class="rise d1 mt-5 text-[clamp(2.1rem,4.6vw,3.6rem)]">{page.title}</h1>
+        <p class="rise d2 mt-5 max-w-[54ch] text-lg text-ink-soft">Mechanical installation design and consultancy since {s.foundedYear ?? 2004}, for domestic and international projects.</p>
+        <div class="rise d3 mt-8 flex flex-wrap gap-3">
+          <a href="/projeler/" class="btn btn-brand">Our projects<Icon name="arrow-right" /></a>
+          <a href="#contact" class="btn btn-outline">Contact</a>
+        </div>
+      </div>
+      {s.heroImage && (
+        <div class="rise d2 relative">
+          <div class="grid-paper absolute -inset-4 -z-10 rounded-lg md:-inset-6" aria-hidden="true"></div>
+          <div class="aspect-[4/3] overflow-hidden rounded-md"><Photo img={s.heroImage} alt="" class="size-full object-cover" width={1400} sizes="(min-width: 1024px) 55vw, 100vw" loading="eager" /></div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section id="about" class="wrap scroll-mt-20 py-20">
+    <p class="eyebrow">About us</p>
+    <RichText html={page.body} class="mt-6 max-w-[70ch]" />
+  </section>
+
+  <section id="services" class="scroll-mt-20 border-y border-line bg-mist">
+    <div class="wrap py-20">
+      <p class="eyebrow">Services</p>
+      <ul class="mt-10 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        {services.map((x) => (
+          <li class="bg-paper p-7"><Icon name={x.icon} class="size-9 text-brand" /><p class="mt-6 text-lg font-bold">{x.titleEn || x.title}</p></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section id="fields" class="wrap scroll-mt-20 py-20">
+    <p class="eyebrow">Fields of activity</p>
+    <ul class="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {areas.map((a) => (
+        <li>
+          <a href={`/faaliyet-alanlari/${a.slug}/`} class="card group flex h-full items-center gap-4 p-5 text-ink no-underline hover:border-ink">
+            <span class="grid size-12 shrink-0 place-items-center rounded-md bg-brand-soft text-brand"><Icon name={a.icon} class="size-6" /></span>
+            <span class="min-w-0 flex-1"><span class="block font-semibold leading-snug">{a.titleEn || a.title}</span><span class="mt-0.5 block text-sm text-ink-soft">{projectsIn(site, a.slug).length} projects</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section id="contact" class="scroll-mt-20 bg-brand text-white">
+    <div class="wrap grid gap-10 py-16 md:grid-cols-2">
+      <div>
+        <h2 class="text-[clamp(1.6rem,3vw,2.25rem)]">Contact</h2>
+        <address class="mt-4 max-w-[40ch] not-italic text-white/85">{s.address}</address>
+      </div>
+      <ul class="grid content-start gap-3">
+        {phones.map((p) => <li><a href={telHref(p)} class="inline-flex items-center gap-3 text-lg font-bold text-white no-underline hover:underline"><Icon name="phone" class="size-5" />{p}</a></li>)}
+        {s.fax && <li class="inline-flex items-center gap-3 text-white/85"><Icon name="fax" class="size-5" />Fax: {s.fax}</li>}
+        <li><a href={`mailto:${s.email}`} class="inline-flex items-center gap-3 text-lg font-bold text-white no-underline hover:underline"><Icon name="mail" class="size-5 shrink-0" />{s.email}</a></li>
+      </ul>
+    </div>
+  </section>
+</Base>
