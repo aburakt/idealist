@@ -35,6 +35,8 @@ export const CHECKS: Check[] = [
   { name: "Proje sayfası: çok görselli", path: "/projeler/ceylanpinar-devlet-hastanesi/", has: ["görsel 19"] },
   { name: "İletişim", path: "/iletisim/", has: ["info@idealistmuhendislik.com.tr", "905 55 77", "284 08 09", "Kızılırmak", "google.com/maps/embed"] },
   { name: "İngilizce sayfa", path: "/en/", has: ['<html lang="en"', "Idealist Engineering", "Establishment", "Mechanical and Electrical Engineering", "International Projects"] },
+  { name: "Blog", path: "/blog/", has: ["Mekanik tesisat üzerine yazılar", "/blog/hastanelerde-hvac-tasarimi/", "8 Ekim 2026"] },
+  { name: "Blog yazısı", path: "/blog/sprinkler-yangin-sondurme-sistemleri/", has: ["TS EN 12845", "BlogPosting", "Diğer yazılar", "/_astro/"] },
   { name: "404 sayfası", path: "/yok-boyle-bir-sayfa/", status: 404, has: ["Sayfa bulunamadı"] },
   { name: "Sitemap", path: "/sitemap-index.xml" },
   { name: "Robots", path: "/robots.txt", has: ["Sitemap:"] },

@@ -4,6 +4,7 @@ export type Img = { src: ImageMetadata | string }
 export type Settings = {
   companyName: string; legalName: string; tagline: string; phone: string; phone2: string; fax: string; email: string; address: string; mapUrl: string
   heroTitle: string; heroText: string; heroImage?: Img; aboutSummary: string; foundedYear?: number; footerText: string; seoDescription: string; shareImage?: Img
+  whatsappUrl: string
 }
 /** Sabit sayfa (Hakkımızda, İngilizce sayfa). `body` panel editöründen gelen HTML'dir. */
 export type Page = { slug: string; title: string; body: string; seoDescription?: string }
@@ -17,10 +18,14 @@ export type Project = {
   summary: string; images: Img[]; featured: boolean
 }
 
+/** Blog yazısı. `date` YYYY-MM-DD; `body` panel editöründen gelen HTML. */
+export type Post = { slug: string; title: string; date: string; category: string; excerpt: string; body: string; cover?: Img }
+
 export type Site = {
   settings: Settings
   pages: Page[]
   services: Service[]
   areas: Area[]
   projects: Project[]
+  posts: Post[]
 }

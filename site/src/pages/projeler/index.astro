@@ -1,6 +1,5 @@
 ---
 import AreaNav from "../../components/AreaNav.astro"
-import ContactBand from "../../components/ContactBand.astro"
 import PageHeader from "../../components/PageHeader.astro"
 import ProjectCard from "../../components/ProjectCard.astro"
 import Base from "../../layouts/Base.astro"
@@ -9,11 +8,9 @@ import { loadSite } from "../../lib/content"
 const { projects, settings } = await loadSite()
 ---
 <Base title="Projeler" path="/projeler/" description={`${settings.companyName} projeleri: hastane, konut, ofis, AVM, otel, eğitim, sanayi ve yurt dışı projelerinde mekanik tesisat tasarım ve müşavirlik.`}>
-  <PageHeader eyebrow="Projeler" title="Projelerimiz" intro="Mekanik tesisat tasarımını ve müşavirliğini üstlendiğimiz projelerden bir seçki. Faaliyet alanına göre süzebilirsiniz.">
-    <AreaNav />
-  </PageHeader>
+  <PageHeader eyebrow="Projeler" title="Projelerimiz" intro="Mekanik tesisat tasarımını ve müşavirliğini üstlendiğimiz projelerden bir seçki. Faaliyet alanına göre süzebilirsiniz." />
+  <AreaNav />
   <section class="wrap grid gap-x-7 gap-y-12 py-16 sm:grid-cols-2 lg:grid-cols-3">
     {projects.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}
   </section>
-  <ContactBand />
 </Base>

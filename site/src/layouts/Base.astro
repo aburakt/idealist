@@ -2,6 +2,7 @@
 import "../styles/global.css"
 import Footer from "../components/Footer.astro"
 import Header from "../components/Header.astro"
+import WhatsApp from "../components/WhatsApp.astro"
 import { loadSite } from "../lib/content"
 import { shareImageUrl } from "../lib/image"
 import { isFixtureMode } from "../lib/pb"
@@ -45,5 +46,6 @@ const noindex = fixture || (process.env.NOINDEX ?? import.meta.env.NOINDEX) === 
     <Header lang={lang} />
     <main id="main"><slot /></main>
     <Footer lang={lang} />
+    <WhatsApp />
   </body>
 </html>

@@ -1,7 +1,9 @@
 import content from "../data/content.json"
+import postsData from "../data/posts.json"
+import { byDateDesc } from "./format"
 import { loadFromPb } from "./pb-loader"
 import { isFixtureMode, pbUrl } from "./pb"
-import type { Area, Img, Project, Site } from "./types"
+import type { Area, Img, Post, Project, Site } from "./types"
 
 const assets = import.meta.glob<{ default: ImageMetadata }>("../assets/media/*.webp", { eager: true })
 
@@ -29,6 +31,7 @@ function fromFixture(): Site {
       companyName: s.companyName, legalName: s.legalName, tagline: s.tagline, phone: s.phone, phone2: s.phone2, fax: s.fax, email: s.email,
       address: s.address, mapUrl: s.mapUrl, heroTitle: s.heroTitle, heroText: s.heroText, heroImage: localImage(s.heroImage),
       aboutSummary: s.aboutSummary, foundedYear: s.foundedYear || undefined, footerText: s.footerText, seoDescription: s.seoDescription,
+      whatsappUrl: "",
     },
     pages: [
       { slug: "hakkimizda", ...c.pages.about },
@@ -41,6 +44,7 @@ function fromFixture(): Site {
       location: p.location, areaM2: p.areaM2 || undefined, summary: p.summary, featured: p.featured > 0,
       images: p.images.map((n) => localImage(n)).filter((x): x is Img => !!x),
     })),
+    posts: postsData.map<Post>((p) => ({ ...p, cover: localImage(p.cover) })).sort(byDateDesc),
   }
 }
 

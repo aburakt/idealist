@@ -3,11 +3,12 @@ import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { formatM2, lines, projectMeta, telHref } from "../site/src/lib/format"
 import { sanitize } from "../site/src/lib/sanitize"
-import { loadContent } from "../scripts/seed"
+import { loadContent, loadPosts } from "../scripts/seed"
 
 const ROOT = join(import.meta.dir, "..")
 const SITE = join(ROOT, "site")
 const c = await loadContent()
+const posts = await loadPosts()
 
 describe("zengin metin temizliği (CSP style-src 'self')", () => {
   test("stil, sınıf, olay öznitelikleri ve betikler atılır; metin korunur", () => {
@@ -63,5 +64,18 @@ describe("biçim yardımcıları", () => {
   })
   test("satır listesi boşlukları atar", () => {
     expect(lines(" a \n\n b\r\n")).toEqual(["a", "b"])
+  })
+})
+
+describe("blog", () => {
+  test("yazıların kapağı var, adresleri benzersiz ve kurala uygun, tarihleri geçerli", () => {
+    for (const p of posts) {
+      expect(existsSync(join(SITE, "src", "assets", "media", p.cover))).toBe(true)
+      expect(p.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+      expect(p.date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(p.excerpt.length).toBeLessThanOrEqual(200)
+      expect(p.body).not.toMatch(/style=|class=|<script/)
+    }
+    expect(new Set(posts.map((p) => p.slug)).size).toBe(posts.length)
   })
 })

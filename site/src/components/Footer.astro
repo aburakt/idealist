@@ -41,6 +41,7 @@ const year = new Date().getFullYear()
       <p>© {year} {s.companyName}</p>
       <ul class="flex gap-5">
         <li><a href={en ? "/en/" : "/hakkimizda/"} class="text-white/55 no-underline hover:text-white">{en ? "About" : "Hakkımızda"}</a></li>
+        {!en && <li><a href="/blog/" class="text-white/55 no-underline hover:text-white">Blog</a></li>}
         <li><a href={en ? "/en/#contact" : "/iletisim/"} class="text-white/55 no-underline hover:text-white">{en ? "Contact" : "İletişim"}</a></li>
         <li><a href={en ? "/" : "/en/"} lang={en ? "tr" : "en"} class="text-white/55 no-underline hover:text-white">{en ? "Türkçe" : "English"}</a></li>
       </ul>

@@ -1,6 +1,8 @@
 ---
 import { loadSite, projectsIn } from "../lib/content"
 
+// Faaliyet alanı süzgeci: başlığın altında yapışık (sticky) şerit. Alanlar panelden eklenir; proje sayısı 0 olan gizlenir.
+// Dar ekranda yatay kayar; seçili alan görünür alana kaydırılır (scripts/area-nav.ts).
 interface Props { current?: string }
 const { current } = Astro.props
 const site = await loadSite()
@@ -9,10 +11,13 @@ const items = [
   ...site.areas.map((a) => ({ href: `/faaliyet-alanlari/${a.slug}/`, label: a.title, count: projectsIn(site, a.slug).length, active: current === a.slug })),
 ].filter((x) => x.count > 0)
 ---
-<nav class="mt-8 flex flex-wrap gap-2" aria-label="Faaliyet alanları">
-  {items.map((x) => (
-    <a href={x.href} aria-current={x.active ? "page" : undefined} class="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm font-semibold text-ink no-underline hover:border-ink aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-white">
-      {x.label}<span class="tabular-nums opacity-60">{x.count}</span>
-    </a>
-  ))}
-</nav>
+<div class="area-bar sticky top-18 z-30 border-b border-line">
+  <nav data-area-nav class="wrap scroller flex gap-2 overflow-x-auto py-3" aria-label="Faaliyet alanları">
+    {items.map((x) => (
+      <a href={x.href} aria-current={x.active ? "page" : undefined} class="chip">
+        {x.label}<span class="tabular-nums opacity-60">{x.count}</span>
+      </a>
+    ))}
+  </nav>
+</div>
+<script>import "../scripts/area-nav"</script>

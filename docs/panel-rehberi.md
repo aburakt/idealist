@@ -11,7 +11,15 @@ Panel: `cms.idealistmuhendislik.com.tr/_/`. Kaydettiğiniz her değişiklik yakl
 - Proje adresi kayıttan sonra değişmez; adı değiştirebilirsiniz.
 
 ## Faaliyet alanları
-Projeler sayfasındaki kategoriler. Ad, İngilizce ad ve simge düzenlenebilir. Silinemez; gizlemek için "published" işaretini kaldırın.
+Projeler sayfasındaki kategoriler (sayfanın üstünde yapışık şerit). Yeni alan eklenebilir: New record, ad ve simge yeterli; adres addan üretilir. Projesi olmayan alan şeritte görünmez. Ad, İngilizce ad ve simge düzenlenebilir. Silinemez; gizlemek için "published" işaretini kaldırın.
+
+## Blog
+- **Yeni yazı:** Blog (posts) > New record. Başlık, tarih ve metin zorunlu; "published" işaretini unutmayın.
+- **Özet:** Listede ve Google sonuçlarında görünür; 1-2 cümle, 160 karakter civarı.
+- **Ara başlıklar:** Metinde "Başlık 2" kullanın; Google yazının yapısını böyle anlar.
+- **Görsel:** Kapak yatay olsun. Metin içi görseller için önce "images" alanına yükleyin, sonra metinde görsel düğmesiyle seçin.
+- Yazı adresi başlıktan üretilir ve kayıttan sonra değişmez.
+- Düzenli yazı (ayda 1-2) arama sonuçlarında görünürlüğü artırır.
 
 ## Hizmetler
 Ana sayfadaki dört hizmet kartı. Başlık, İngilizce başlık, kısa açıklama ve simge.
@@ -22,4 +30,4 @@ Ana sayfadaki dört hizmet kartı. Başlık, İngilizce başlık, kısa açıkla
 Bu iki sayfa silinemez ve gizlenemez.
 
 ## Site Ayarları
-Telefonlar, faks, e-posta, adres, harita, ana sayfa başlığı ve görseli, Hakkımızda özeti, kuruluş yılı, Google açıklaması. Tek kayıttır.
+Telefonlar, faks, e-posta, adres, harita, ana sayfa başlığı ve görseli, Hakkımızda özeti, kuruluş yılı, Google açıklaması, WhatsApp bağlantısı (doluysa sağ altta WhatsApp simgesi çıkar). Tek kayıttır.

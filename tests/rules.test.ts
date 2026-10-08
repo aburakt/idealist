@@ -1,11 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { startPb, type Pb } from "../scripts/pb-harness"
-import { type Content, loadContent, seed } from "../scripts/seed"
+import { type Content, type PostSeed, loadContent, loadPosts, seed } from "../scripts/seed"
 
 let pb: Pb
 let content: Content
+let posts: PostSeed[]
 beforeAll(async () => {
   content = await loadContent()
+  posts = await loadPosts()
   pb = await startPb()
   await seed(pb)
 }, 300_000)
@@ -25,7 +27,7 @@ const del = (c: string, id: string) => pb.admin(`/api/collections/${c}/records/$
 const firstOf = async (c: string, filter = ""): Promise<Item> =>
   ((await (await pb.admin(`/api/collections/${c}/records?perPage=1${filter ? "&filter=" + enc(filter) : ""}`)).json()) as { items: Item[] }).items[0]!
 const enc = encodeURIComponent
-const COLLECTIONS = ["settings", "pages", "services", "areas", "projects"]
+const COLLECTIONS = ["settings", "pages", "services", "areas", "projects", "posts"]
 
 describe("gerçek içerik tohumlandı", () => {
   test("anonim okuyucu beklenen sayıda kayıt görür", async () => {
@@ -34,6 +36,7 @@ describe("gerçek içerik tohumlandı", () => {
     expect((await list("services")).total).toBe(content.services.length)
     expect((await list("areas")).total).toBe(content.areas.length)
     expect((await list("projects")).total).toBe(content.projects.length)
+    expect((await list("posts")).total).toBe(posts.length)
   })
   test("proje görselleri ve faaliyet alanı ilişkileri yüklenir", async () => {
     const p = await firstOf("projects", 'slug = "sheraton-batum"')
@@ -48,6 +51,7 @@ describe("taslak sızıntısı", () => {
     const drafts: [string, Record<string, unknown>][] = [
       ["services", { title: "Taslak hizmet", icon: "mep", published: false }],
       ["areas", { title: "Taslak alan", icon: "home", published: false }],
+      ["posts", { title: "Taslak yazı", date: "2026-10-08 00:00:00.000Z", body: "<p>x</p>", published: false }],
     ]
     for (const [c, body] of drafts) {
       const res = await create(c, body)
@@ -109,6 +113,14 @@ describe("panel korumaları", () => {
     expect((await patch("projects", p.id, { slug: "koru" })).status).toBe(400)
     // yeni proje görselsiz açılamaz (images zorunlu)
     expect((await create("projects", { name: "Görselsiz", areas: [area.id], published: true })).status).toBe(400)
+  })
+  test("blog yazısı adresi başlıktan Türkçe karaktersiz üretilir, sonra değiştirilemez", async () => {
+    const res = await create("posts", { title: "Isı Geri Kazanımlı Havalandırma Çözümleri", date: "2026-10-08 00:00:00.000Z", body: "<p>x</p>", published: false })
+    expect(res.status).toBe(200)
+    const post = (await res.json()) as { id: string; slug: string }
+    expect(post.slug).toBe("isi-geri-kazanimli-havalandirma-cozumleri")
+    expect((await patch("posts", post.id, { slug: "baska" })).status).toBe(400)
+    expect((await del("posts", post.id)).status).toBe(204)
   })
   test("panel adı, gizli şema düğmeleri; kullanılmayan users koleksiyonu yok; her alanda yardım metni", async () => {
     const s = (await (await pb.admin("/api/settings")).json()) as { meta: { appName: string; hideControls: boolean } }

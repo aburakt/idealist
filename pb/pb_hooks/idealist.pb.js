@@ -2,7 +2,7 @@
 
 // Not: hook handler'ları izole çalışır; ortak kod handler içinde require() ile yüklenir.
 // Yeni içerik koleksiyonu eklenirse BURAYA da eklenir; yoksa değişiklik siteye yansımaz.
-const CONTENT = ["settings", "pages", "services", "areas", "projects"]
+const CONTENT = ["settings", "pages", "services", "areas", "projects", "posts"]
 
 onRecordAfterCreateSuccess((e) => {
   require(`${__hooks}/lib/deploy.js`).markDirty(e.app)
@@ -23,12 +23,12 @@ onRecordAfterDeleteSuccess((e) => {
 onRecordCreateRequest((e) => {
   require(`${__hooks}/lib/protect.js`).beforeCreate(e)
   e.next()
-}, "settings", "pages", "areas", "projects")
+}, "settings", "pages", "areas", "projects", "posts")
 
 onRecordUpdateRequest((e) => {
   require(`${__hooks}/lib/protect.js`).beforeUpdate(e)
   e.next()
-}, "settings", "pages", "areas", "projects")
+}, "settings", "pages", "areas", "projects", "posts")
 
 onRecordDeleteRequest((e) => {
   require(`${__hooks}/lib/protect.js`).beforeDelete(e)

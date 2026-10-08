@@ -1,4 +1,5 @@
 ---
+import Flow from "../../components/Flow.astro"
 import Icon from "../../components/Icon.astro"
 import Photo from "../../components/Photo.astro"
 import RichText from "../../components/RichText.astro"
@@ -13,21 +14,22 @@ const { settings: s, services, areas } = site
 const phones = [s.phone, s.phone2].filter(Boolean)
 ---
 <Base title={page.title} path="/en/" lang="en" description={page.seoDescription ?? "Idealist Engineering: mechanical installation design and consultancy since 2004. Hospitals, residential, office, retail, hotel and international projects. Ankara, Türkiye."}>
-  <section class="border-b border-line">
-    <div class="wrap grid items-center gap-10 py-12 md:py-16 lg:grid-cols-[1fr_1.15fr] lg:gap-14 lg:py-20">
+  <section class="night relative isolate overflow-hidden">
+    <Flow class="-z-20" />
+    <div class="night-fade pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="wrap grid items-center gap-10 py-14 md:py-20 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:py-24">
       <div>
         <p class="eyebrow rise">Quality, modern and reliable projects</p>
         <h1 class="rise d1 mt-5 text-[clamp(2.1rem,4.6vw,3.6rem)]">{page.title}</h1>
-        <p class="rise d2 mt-5 max-w-[54ch] text-lg text-ink-soft">Mechanical installation design and consultancy since {s.foundedYear ?? 2004}, for domestic and international projects.</p>
+        <p class="rise d2 mt-5 max-w-[54ch] text-lg text-white/72">Mechanical installation design and consultancy since {s.foundedYear ?? 2004}, for domestic and international projects.</p>
         <div class="rise d3 mt-8 flex flex-wrap gap-3">
           <a href="/projeler/" class="btn btn-brand">Our projects<Icon name="arrow-right" /></a>
-          <a href="#contact" class="btn btn-outline">Contact</a>
+          <a href="#contact" class="btn btn-glass">Contact</a>
         </div>
       </div>
       {s.heroImage && (
         <div class="rise d2 relative">
-          <div class="grid-paper absolute -inset-4 -z-10 rounded-lg md:-inset-6" aria-hidden="true"></div>
-          <div class="aspect-[4/3] overflow-hidden rounded-md"><Photo img={s.heroImage} alt="" class="size-full object-cover" width={1400} sizes="(min-width: 1024px) 55vw, 100vw" loading="eager" /></div>
+          <div class="aspect-[4/3] overflow-hidden rounded-lg ring-1 ring-white/12 shadow-[0_40px_80px_-30px_oklch(0_0_0/0.7)]"><Photo img={s.heroImage} alt="" class="size-full object-cover" width={1400} sizes="(min-width: 1024px) 55vw, 100vw" loading="eager" /></div>
         </div>
       )}
     </div>
@@ -63,16 +65,17 @@ const phones = [s.phone, s.phone2].filter(Boolean)
     </ul>
   </section>
 
-  <section id="contact" class="scroll-mt-20 bg-brand text-white">
+  <section id="contact" class="scroll-mt-20 border-t border-line bg-paper">
     <div class="wrap grid gap-10 py-16 md:grid-cols-2">
       <div>
-        <h2 class="text-[clamp(1.6rem,3vw,2.25rem)]">Contact</h2>
-        <address class="mt-4 max-w-[40ch] not-italic text-white/85">{s.address}</address>
+        <p class="eyebrow">Contact</p>
+        <h2 class="mt-4 text-[clamp(1.6rem,3vw,2.25rem)]">Get in touch</h2>
+        <address class="mt-4 max-w-[40ch] not-italic text-ink-soft">{s.address}</address>
       </div>
       <ul class="grid content-start gap-3">
-        {phones.map((p) => <li><a href={telHref(p)} class="inline-flex items-center gap-3 text-lg font-bold text-white no-underline hover:underline"><Icon name="phone" class="size-5" />{p}</a></li>)}
-        {s.fax && <li class="inline-flex items-center gap-3 text-white/85"><Icon name="fax" class="size-5" />Fax: {s.fax}</li>}
-        <li><a href={`mailto:${s.email}`} class="inline-flex items-center gap-3 text-lg font-bold text-white no-underline hover:underline"><Icon name="mail" class="size-5 shrink-0" />{s.email}</a></li>
+        {phones.map((p) => <li><a href={telHref(p)} class="inline-flex items-center gap-3 text-lg font-bold text-ink no-underline hover:text-brand"><Icon name="phone" class="size-5 text-brand" />{p}</a></li>)}
+        {s.fax && <li class="inline-flex items-center gap-3 text-ink-soft"><Icon name="fax" class="size-5 text-brand" />Fax: {s.fax}</li>}
+        <li><a href={`mailto:${s.email}`} class="inline-flex items-center gap-3 text-lg font-bold text-ink no-underline hover:text-brand"><Icon name="mail" class="size-5 shrink-0 text-brand" />{s.email}</a></li>
       </ul>
     </div>
   </section>

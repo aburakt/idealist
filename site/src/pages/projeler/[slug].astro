@@ -1,6 +1,6 @@
 ---
 import { getImage } from "astro:assets"
-import ContactBand from "../../components/ContactBand.astro"
+import Flow from "../../components/Flow.astro"
 import Icon from "../../components/Icon.astro"
 import Photo from "../../components/Photo.astro"
 import ProjectCard from "../../components/ProjectCard.astro"
@@ -43,16 +43,18 @@ const share = cover ? await shareImageUrl(cover) : undefined
 const desc = [p.name, p.usage, p.location, p.areaM2 ? formatM2(p.areaM2) : ""].filter(Boolean).join(" · ") + `. ${site.settings.companyName} mekanik tesisat projesi.`
 ---
 <Base title={p.name} path={`/projeler/${p.slug}/`} description={desc} image={share}>
-  <section class="grid-paper border-b border-line">
-    <div class="wrap py-10 md:py-14">
-      <nav aria-label="Sayfa yolu" class="text-sm text-ink-soft">
-        <a href="/projeler/" class="text-ink-soft no-underline hover:text-brand">Projeler</a>
-        {areas[0] && <> / <a href={`/faaliyet-alanlari/${areas[0].slug}/`} class="text-ink-soft no-underline hover:text-brand">{areas[0].title}</a></>}
+  <section class="night relative isolate overflow-hidden">
+    <Flow class="-z-20" />
+    <div class="night-fade pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="wrap py-12 md:py-16">
+      <nav aria-label="Sayfa yolu" class="text-sm text-white/60">
+        <a href="/projeler/" class="text-white/65 no-underline hover:text-white">Projeler</a>
+        {areas[0] && <> / <a href={`/faaliyet-alanlari/${areas[0].slug}/`} class="text-white/65 no-underline hover:text-white">{areas[0].title}</a></>}
       </nav>
       <h1 class="rise mt-4 max-w-[26ch] text-[clamp(2rem,4.5vw,3.25rem)]">{p.name}</h1>
       {areas.length > 0 && (
         <ul class="rise d1 mt-5 flex flex-wrap gap-2">
-          {areas.map((a) => <li><a href={`/faaliyet-alanlari/${a.slug}/`} class="inline-flex rounded-full border border-line bg-paper px-3 py-1 text-sm font-semibold text-ink no-underline hover:border-ink">{a.title}</a></li>)}
+          {areas.map((a) => <li><a href={`/faaliyet-alanlari/${a.slug}/`} class="chip">{a.title}</a></li>)}
         </ul>
       )}
     </div>
@@ -90,7 +92,7 @@ const desc = [p.name, p.usage, p.location, p.areaM2 ? formatM2(p.areaM2) : ""].f
         </dl>
       )}
       {paragraphs(p.summary).map((t) => <p class="mt-5 text-ink-soft">{t}</p>)}
-      <a href="/iletisim/" class="btn btn-brand mt-6">Benzer bir proje için iletişime geçin<Icon name="arrow-right" /></a>
+      <a href="/iletisim/" class="btn btn-outline mt-6">Benzer bir proje için iletişime geçin<Icon name="arrow-right" /></a>
     </aside>
   </section>
 
@@ -116,6 +118,5 @@ const desc = [p.name, p.usage, p.location, p.areaM2 ? formatM2(p.areaM2) : ""].f
       </div>
     </div>
   </dialog>
-  <ContactBand />
 </Base>
 <script>import "../../scripts/gallery"</script>

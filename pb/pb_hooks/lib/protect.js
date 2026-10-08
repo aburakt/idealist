@@ -7,12 +7,14 @@
 // - pages: iki sabit sayfa (Hakkımızda, İngilizce sayfa); yeni kayıt açılamaz, silinemez, gizlenemez, adresi değiştirilemez.
 // - areas: faaliyet alanı silinemez (projeler ona bağlı); gizlemek için yayın işareti kaldırılır. Adres addan üretilir, kilitlenir.
 // - projects: adres (slug) boşsa addan üretilir; kaydedildikten sonra değiştirilemez.
+// - posts (Blog): adres (slug) boşsa başlıktan üretilir; kaydedildikten sonra değiştirilemez.
 
 const RULES = {
   settings: { label: "Site Ayarları", singleton: true, noDelete: true },
   pages: { label: "Sayfalar", noCreate: true, noDelete: true, locked: ["slug"], alwaysPublished: true },
   areas: { label: "Faaliyet alanları", noDelete: true, slugFrom: "title", locked: ["slug"] },
   projects: { slugFrom: "name", locked: ["slug"] },
+  posts: { slugFrom: "title", locked: ["slug"] },
 }
 
 function slugify(s) {

@@ -2,8 +2,8 @@
 @import "@fontsource-variable/archivo/index.css";
 
 /*
- * Yalnız açık tema: kurumsal görünüm sistem koyu moduna göre değişmez (EBS'de alınan geri bildirim).
- * Renkler logodan: İdealist kırmızısı (#e3000f) ve logonun gri tonu; nötrler hafif soğuk antrasit.
+ * Tek, sabit tema: sistem koyu moduna göre değişmez. Ne bembeyaz ne simsiyah: üst bantlar ve alt bilgi koyu grafit
+ * (night), gövde sıcak taş tonu (canvas), kartlar beyaz (paper). Vurgu logodaki İdealist kırmızısı (#e3000f).
  */
 @theme {
   --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
@@ -12,12 +12,14 @@
   --color-brand-deep: oklch(0.5 0.205 27.5);
   --color-brand-soft: oklch(0.965 0.02 25);
   --color-steel: oklch(0.69 0 0);
-  --color-ink: oklch(0.21 0.008 255);
-  --color-ink-soft: oklch(0.46 0.012 255);
-  --color-paper: oklch(0.995 0.001 255);
-  --color-mist: oklch(0.966 0.004 255);
-  --color-line: oklch(0.9 0.006 255);
-  --color-night: oklch(0.24 0.012 255);
+  --color-ink: oklch(0.22 0.014 255);
+  --color-ink-soft: oklch(0.47 0.014 255);
+  --color-paper: oklch(0.995 0.002 85);
+  --color-canvas: oklch(0.968 0.006 85);
+  --color-mist: oklch(0.945 0.008 85);
+  --color-line: oklch(0.885 0.01 85);
+  --color-night: oklch(0.235 0.02 255);
+  --color-night-soft: oklch(0.29 0.022 255);
 }
 
 @layer base {
@@ -26,11 +28,14 @@
   body {
     font-family: var(--font-sans);
     color: var(--color-ink);
-    background: var(--color-paper);
+    background: var(--color-canvas);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { letter-spacing: -0.02em; line-height: 1.12; text-wrap: balance; font-weight: 700; }
+  /* izleme boyuta göre: büyük başlık sıkı, gövde nötr (optik ölçek) */
+  h1 { letter-spacing: -0.03em; line-height: 1.04; text-wrap: balance; font-weight: 700; }
+  h2 { letter-spacing: -0.022em; line-height: 1.1; text-wrap: balance; font-weight: 700; }
+  h3 { letter-spacing: -0.01em; line-height: 1.25; text-wrap: balance; font-weight: 650; }
   ::selection { background: var(--color-brand); color: white; }
   :focus-visible { outline: 3px solid var(--color-brand); outline-offset: 3px; border-radius: 4px; }
   a { text-underline-offset: 0.2em; }
@@ -43,8 +48,11 @@
   .btn {
     display: inline-flex; align-items: center; gap: 0.55rem; border-radius: 0.375rem; padding: 0.85rem 1.35rem;
     font-weight: 650; font-size: 0.95rem; line-height: 1; text-decoration: none; white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s ease-out;
+    -webkit-tap-highlight-color: transparent;
   }
+  /* geri bildirim basışta, bırakmayı beklemeden */
+  .btn:active { transform: scale(0.97); }
   .btn svg { width: 1.1em; height: 1.1em; flex: none; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
   .btn:hover svg { transform: translateX(3px); }
   .btn-brand { background: var(--color-brand); color: white; }
@@ -53,8 +61,8 @@
   .btn-ink:hover { background: oklch(0.32 0.01 255); }
   .btn-outline { color: var(--color-ink); border: 1.5px solid var(--color-line); background: var(--color-paper); }
   .btn-outline:hover { border-color: var(--color-ink); }
-  .btn-white { background: white; color: var(--color-brand-deep); }
-  .btn-white:hover { background: oklch(0.97 0.01 25); }
+  .btn-glass { color: white; border: 1.5px solid oklch(1 0 0 / 0.28); background: oklch(1 0 0 / 0.06); backdrop-filter: blur(12px); }
+  .btn-glass:hover { border-color: oklch(1 0 0 / 0.6); background: oklch(1 0 0 / 0.12); }
   .btn-sm { padding: 0.6rem 0.95rem; font-size: 0.85rem; }
 
   /* bölüm üst yazısı: kırmızı kısa çizgi + büyük harf etiket */
@@ -64,12 +72,52 @@
 
   /* teknik çizim ızgarası (mühendislik paftası hissi) */
   .grid-paper {
-    background-color: var(--color-mist);
+    background-color: var(--color-canvas);
     background-image:
       linear-gradient(oklch(0.21 0.008 255 / 0.05) 1px, transparent 1px),
       linear-gradient(90deg, oklch(0.21 0.008 255 / 0.05) 1px, transparent 1px);
     background-size: 28px 28px;
   }
+
+  /* koyu üst bant: grafit, hafif kırmızı ışık; üstünde akış animasyonu (scripts/flow.ts) */
+  .night {
+    background-color: var(--color-night);
+    background-image:
+      radial-gradient(50rem 28rem at 90% -10%, oklch(0.585 0.236 27.5 / 0.16), transparent 70%),
+      radial-gradient(40rem 30rem at -10% 120%, oklch(0.5 0.06 240 / 0.25), transparent 70%);
+    color: white;
+  }
+  .night .eyebrow { color: oklch(0.72 0.17 27.5); }
+  /* yazının olduğu sol tarafı akıştan ayırır */
+  .night-fade { background: linear-gradient(90deg, var(--color-night) 10%, oklch(0.235 0.02 255 / 0.6) 45%, transparent 75%); }
+
+  /* süzgeç/etiket çipi: açık zeminde beyaz, seçiliyken koyu */
+  .chip {
+    display: inline-flex; flex: none; align-items: center; gap: 0.5rem; border: 1px solid var(--color-line); border-radius: 999px;
+    background: var(--color-paper); padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600; line-height: 1.2; color: var(--color-ink);
+    text-decoration: none; white-space: nowrap; transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.1s ease-out;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .chip:hover { border-color: var(--color-ink); }
+  .chip:active { transform: scale(0.96); }
+  .chip[aria-current="page"] { border-color: var(--color-ink); background: var(--color-ink); color: white; }
+  .night .chip { border-color: oklch(1 0 0 / 0.2); background: oklch(1 0 0 / 0.06); color: white; }
+  .night .chip:hover { border-color: oklch(1 0 0 / 0.55); }
+
+  /* yapışık süzgeç şeridi: yarı saydam malzeme, içerik altından akar */
+  .area-bar { background: oklch(0.968 0.006 85 / 0.82); backdrop-filter: blur(16px) saturate(160%); }
+  /* yatay kayan şeridin kenarları yumuşak solar; kaydırma çubuğu gizli */
+  .scroller { scrollbar-width: none; mask-image: linear-gradient(90deg, transparent, black 1.25rem, black calc(100% - 2.5rem), transparent); }
+  .scroller::-webkit-scrollbar { display: none; }
+
+  /* WhatsApp: yalnız simge, sağ alt köşe */
+  .wa-fab {
+    position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 40; display: grid; place-items: center; width: 3.5rem; height: 3.5rem;
+    border-radius: 999px; background: oklch(0.7 0.17 150); color: white; box-shadow: 0 10px 30px -8px oklch(0.4 0.12 150 / 0.55);
+    transition: transform 0.1s ease-out, background-color 0.2s;
+  }
+  .wa-fab:hover { background: oklch(0.64 0.16 150); }
+  .wa-fab:active { transform: scale(0.94); }
 
   .project-card img { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
   .project-card:hover img { transform: scale(1.04); }
@@ -96,6 +144,11 @@
 }
 
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-transparency: reduce) {
+  .area-bar { background: var(--color-canvas); backdrop-filter: none; }
+  .btn-glass { background: var(--color-night-soft); backdrop-filter: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

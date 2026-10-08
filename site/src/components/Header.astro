@@ -10,7 +10,7 @@ const { settings } = await loadSite()
 const en = lang === "en"
 const nav: [string, string][] = en
   ? [["About", "/en/#about"], ["Services", "/en/#services"], ["Fields", "/en/#fields"], ["Projects", "/projeler/"], ["Contact", "/en/#contact"]]
-  : [["Hakkımızda", "/hakkimizda/"], ["Hizmetler", "/#hizmetler"], ["Projeler", "/projeler/"], ["İletişim", "/iletisim/"]]
+  : [["Hakkımızda", "/hakkimizda/"], ["Hizmetler", "/#hizmetler"], ["Projeler", "/projeler/"], ["Blog", "/blog/"], ["İletişim", "/iletisim/"]]
 const path = Astro.url.pathname
 const current = (href: string) => href !== "/" && !href.includes("#") && path.startsWith(href)
 ---

@@ -1,0 +1,16 @@
+---
+import PageHeader from "../../components/PageHeader.astro"
+import PostCard from "../../components/PostCard.astro"
+import Base from "../../layouts/Base.astro"
+import { loadSite } from "../../lib/content"
+
+const { posts, settings } = await loadSite()
+---
+<Base title="Blog" path="/blog/" description={`${settings.companyName} blog: hastane HVAC tasarımı, yangın tesisatı, ısı pompası, BIM koordinasyonu, yeşil bina ve mekanik müşavirlik üzerine yazılar.`}>
+  <PageHeader eyebrow="Blog" title="Mekanik tesisat üzerine yazılar" intro="Tasarım ve müşavirlik deneyimimizden notlar: sağlık yapıları, yangın güvenliği, enerji verimliliği ve proje koordinasyonu." />
+  <section class="wrap py-16">
+    {posts.length === 0
+      ? <p class="text-lg text-ink-soft">Henüz yayında yazı yok.</p>
+      : <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{posts.map((p, i) => <PostCard post={p} eager={i < 3} />)}</div>}
+  </section>
+</Base>

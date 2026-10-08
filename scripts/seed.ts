@@ -19,7 +19,9 @@ export type Content = {
     images: string[]; featured: number; summary: string; note: string
   }[]
 }
+export type PostSeed = { slug: string; title: string; date: string; category: string; cover: string; excerpt: string; body: string }
 export const loadContent = async (): Promise<Content> => (await Bun.file(join(SITE, "src", "data", "content.json")).json()) as Content
+export const loadPosts = async (): Promise<PostSeed[]> => (await Bun.file(join(SITE, "src", "data", "posts.json")).json()) as PostSeed[]
 
 const blob = async (name: string) => new Blob([await Bun.file(join(MEDIA, name)).arrayBuffer()], { type: "image/webp" })
 
@@ -71,5 +73,8 @@ export async function seed(pb: Pb): Promise<void> {
       name: p.name, slug: p.slug, areas: p.areas.map((a) => areaId.get(a)), usage: p.usage, client: p.client, architect: p.architect,
       year: p.year, location: p.location, area_m2: p.areaM2, summary: p.summary, featured: p.featured > 0, position: pos(i), published: true,
     }, { images: p.images })
+  }
+  for (const p of await loadPosts()) {
+    await save(pb, "posts", { title: p.title, slug: p.slug, date: `${p.date} 00:00:00.000Z`, category: p.category, excerpt: p.excerpt, body: p.body, published: true }, { cover: p.cover })
   }
 }
