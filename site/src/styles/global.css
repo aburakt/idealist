@@ -90,6 +90,8 @@
   .facts > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1rem; padding: 0.85rem 0; border-top: 1px solid var(--color-line); }
   .facts > div:last-child { border-bottom: 1px solid var(--color-line); }
   .facts dt { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-soft); padding-top: 0.2rem; }
+  /* dar ekranda etiket üstte: uzun e-posta/unvan kelime ortasından bölünmesin */
+  @media (max-width: 639px) { .facts > div { grid-template-columns: 1fr; gap: 0.25rem; } }
 
   .photo img { transition: opacity 0.3s; }
   .photo:hover img { opacity: 0.9; }

@@ -23,7 +23,7 @@ function walk(dir: string): string[] {
 const htmlOf = (dir: string) => Object.fromEntries(walk(dir).filter((f) => f.endsWith(".html")).map((f) => [f.slice(dir.length), readFileSync(f, "utf8")]))
 /** Görünen metin: etiketler, betikler, önizleme bandı ve boşluk farkları atılır. */
 const visible = (html: string): string =>
-  html.replace(/<(script|style|svg)[\s\S]*?<\/\1>/g, "").replace(/<p data-fixture-banner[\s\S]*?<\/p>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
+  html.replace(/<(script|style|svg)[\s\S]*?<\/\1>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
 
 type Check = { name: string; path: string; status?: number; has?: string[]; hasNot?: string[] }
 export const CHECKS: Check[] = [

@@ -41,10 +41,9 @@ const noindex = fixture || (process.env.NOINDEX ?? import.meta.env.NOINDEX) === 
     {ogImage && <meta property="og:image" content={ogImage} />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
   </head>
-  <body>
-    {fixture && <p data-fixture-banner class="bg-ink px-4 py-2 text-center text-sm font-bold text-paper">Önizleme: içerik henüz PocketBase'den gelmiyor.</p>}
+  <body class="flex min-h-dvh flex-col">
     <Header lang={lang} />
-    <main id="main"><slot /></main>
+    <main id="main" class="flex-1"><slot /></main>
     <Footer lang={lang} />
     <WhatsApp />
   </body>
