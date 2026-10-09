@@ -1,12 +1,9 @@
 ---
 import Icon from "./Icon.astro"
 import Logo from "./Logo.astro"
-import { telHref } from "../lib/format"
-import { loadSite } from "../lib/content"
 
 interface Props { lang?: "tr" | "en" }
 const { lang = "tr" } = Astro.props
-const { settings } = await loadSite()
 const en = lang === "en"
 const nav: [string, string][] = en
   ? [["About", "/en/#about"], ["Services", "/en/#services"], ["Fields", "/en/#fields"], ["Projects", "/projeler/"], ["Contact", "/en/#contact"]]
@@ -24,7 +21,6 @@ const current = (href: string) => !href.includes("#") && (path.startsWith(href) 
       ))}
     </ul>
     <div class="flex items-center gap-5">
-      <a href={telHref(settings.phone)} class="mono hidden text-sm text-ink no-underline hover:text-brand xl:inline">{settings.phone}</a>
       <a href={en ? "/" : "/en/"} lang={en ? "tr" : "en"} hreflang={en ? "tr" : "en"} class="mono text-sm text-ink-soft no-underline hover:text-ink" aria-label={en ? "Türkçe" : "English"}>{en ? "TR" : "EN"}</a>
       <details class="group relative lg:hidden">
         <summary class="grid size-11 cursor-pointer list-none place-items-center [&::-webkit-details-marker]:hidden" aria-label={en ? "Menu" : "Menü"}>
@@ -33,7 +29,6 @@ const current = (href: string) => !href.includes("#") && (path.startsWith(href) 
         <div class="fixed inset-x-0 top-18 border-y border-line bg-paper">
           <ul class="wrap grid py-3 text-lg">
             {nav.map(([label, href]) => <li><a href={href} class="block border-b border-line py-4 text-ink no-underline last:border-0">{label}</a></li>)}
-            <li><a href={telHref(settings.phone)} class="mono block py-4 text-base text-ink no-underline">{settings.phone}</a></li>
           </ul>
         </div>
       </details>

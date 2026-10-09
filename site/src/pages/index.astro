@@ -16,10 +16,11 @@ const countries = new Set(projects.map((p) => (p.areas.includes("yurt-disi") ? p
 const stats: [string, string][] = [
   ...(s.foundedYear ? [[String(s.foundedYear), "Kuruluş"] as [string, string]] : []),
   [String(projects.length), "Proje"],
-  ...(millions >= 1 ? [[`${formatNumber(millions)} milyon m²`, "Toplam proje alanı"] as [string, string]] : []),
+  ...(millions >= 1 ? [[`${formatNumber(millions)} milyon\u00a0m²`, "Toplam proje alanı"] as [string, string]] : []),
   ...(countries > 1 ? [[String(countries), "Ülke"] as [string, string]] : [[String(areas.length), "Faaliyet alanı"] as [string, string]]),
 ]
-// seçili projeler: geniş ve dar kartlar sırayla (7/5, 5/7) yan yana; görsel yükseklikleri eşit (7 x 2/3 = 5 x 14/15)
+// seçili projeler: geniş ve dar kartlar sırayla (7/5, 5/7) yan yana; lg'de görsel yüksekliği sabit, başlıklar aynı hizada
+// (oranla eşitleme sütun boşlukları yüzünden ~13px kayıyordu)
 const wide = (i: number) => i % 4 === 0 || i % 4 === 3
 ---
 <Base title="Ana sayfa" path="/">
@@ -50,7 +51,7 @@ const wide = (i: number) => i % 4 === 0 || i % 4 === 3
       {stats.map(([value, label], i) => (
         <div class:list={["py-7 md:py-9", i % 2 === 1 && "pl-5 lg:pl-0", i >= 2 && "border-t border-line lg:border-t-0"]}>
           <dt class="label">{label}</dt>
-          <dd class="mono mt-2 text-[clamp(1.5rem,2.6vw,2.1rem)] font-medium leading-tight text-ink">{value}</dd>
+          <dd class="mono mt-2 text-[clamp(1.25rem,2.2vw,1.9rem)] font-medium leading-tight text-ink">{value}</dd>
         </div>
       ))}
     </dl>
@@ -67,7 +68,7 @@ const wide = (i: number) => i % 4 === 0 || i % 4 === 3
     <div class="mt-12 grid gap-x-8 gap-y-14 lg:grid-cols-12">
       {featured.map((p, i) => (
         <div class={wide(i) ? "lg:col-span-7" : "lg:col-span-5"}>
-          <ProjectCard project={p} large aspect={wide(i) ? "aspect-[3/2]" : "aspect-[3/2] lg:aspect-[15/14]"} sizes={wide(i) ? "(min-width: 1024px) 58vw, 100vw" : "(min-width: 1024px) 42vw, 100vw"} />
+          <ProjectCard project={p} large aspect="aspect-[3/2] lg:aspect-auto lg:h-[clamp(20rem,36vw,29rem)]" sizes={wide(i) ? "(min-width: 1024px) 58vw, 100vw" : "(min-width: 1024px) 42vw, 100vw"} />
         </div>
       ))}
     </div>
