@@ -20,5 +20,6 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - PB koleksiyonları: settings, pages (hakkimizda, en), services, areas (faaliyet alanları), projects, posts (blog, `site/src/data/posts.json` ile tohumlanır). Yeni koleksiyon `pb_hooks/idealist.pb.js` CONTENT listesine de eklenir.
 - Proje adresi `/projeler/<slug>/`, faaliyet alanı adresi `/faaliyet-alanlari/<slug>/`, blog `/blog/<slug>/`; slug'lar kayıttan sonra kilitlidir.
 - Logo: `site/public/logo.svg` eski PNG'den birebir vektör; yeniden çizilmez.
+  Koyu zemin varyantı `logo-light.svg` (gri → beyaz, şekil aynı); `<Logo tone="light">` ile.
 - Sırlar Infisical'da; repoda yalnızca `.env.example`. `_yedek/` repoya girmez.
 - Eski adres yönlendirmeleri `site/public/_redirects` (test ölçer).
