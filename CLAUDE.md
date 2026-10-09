@@ -19,7 +19,6 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - Tasarım dili kurumsal mühendislik müşavirliği (Arup, Max Fordham, Atelier Ten örnek alındı; araştırma `docs/tasarim-arastirma.md`): beyaz/kâğıt zemin, mürekkep siyahı metin, renk fotoğraflardan gelir, kırmızı (#e3000f) yalnız küçük vurgularda. Yazı IBM Plex Sans, sayı ve künye IBM Plex Mono. Parçacık/akış animasyonu, cam efektli buton, sayaç, slider, kırmızı CTA bandı yok. Tek sabit tema, koyu moda otomatik geçiş yok.
 - PB koleksiyonları: settings, pages (hakkimizda, en), services, areas (faaliyet alanları), projects, posts (blog, `site/src/data/posts.json` ile tohumlanır). Yeni koleksiyon `pb_hooks/idealist.pb.js` CONTENT listesine de eklenir.
 - Proje adresi `/projeler/<slug>/`, faaliyet alanı adresi `/faaliyet-alanlari/<slug>/`, blog `/blog/<slug>/`; slug'lar kayıttan sonra kilitlidir.
-- Logo: `site/public/logo.svg` eski PNG'den birebir vektör; yeniden çizilmez.
-  Koyu zemin varyantı `logo-light.svg` (gri → beyaz, şekil aynı); `<Logo tone="light">` ile.
+- Logo: `site/public/logo.svg` ve koyu zemin varyantı `logo-light.svg` (gri → beyaz) `scripts/legacy/logo.py` ile üretilir: eski PNG'den ölçülmüş temiz geometri. Şekil değiştirilmez, elle düzenlenmez; `<Logo tone="light">` koyu zeminde.
 - Sırlar Infisical'da; repoda yalnızca `.env.example`. `_yedek/` repoya girmez.
 - Eski adres yönlendirmeleri `site/public/_redirects` (test ölçer).
