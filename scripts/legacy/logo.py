@@ -1,0 +1,27 @@
+"""İdealist logosu: eski sitenin 247x56 PNG'sinden ölçülen ölçülerle temiz geometri (düz kenar, elips halka).
+Otomatik iz (tırtıklı) yerine bu çizim kullanılır. Çalıştırma: python3 scripts/legacy/logo.py site/public
+"""
+import sys
+GREY_SW = ("M1.6 25.3C8 26.6 17 29.8 23.6 34.2C26.5 27 35 15.5 49.7 7.1"
+  "C40 13.5 31.5 24 30.2 34.5C29 42 28.4 48 28.1 55.8C26.7 49 23.8 43 16.3 35C11.5 30.5 5 27 1.6 25.3Z")
+def ell(cx,cy,rx,ry):
+  return f"M{cx-rx:g} {cy:g}a{rx:g} {ry:g} 0 1 0 {2*rx:g} 0a{rx:g} {ry:g} 0 1 0 {-2*rx:g} 0Z"
+RING = ell(18.45,13.5,15.25,13.5)+ell(16.55,14.3,11.65,9.7)
+D = "M47.7 20.1H66C73.5 20.1 78.9 26 78.9 34.2C78.9 43 73.5 49.3 65 49.3H47.7ZM59.7 25V45H62.5C65 45 65.9 41.5 65.9 38V30.5C65.9 27.5 64.6 25 63 25Z"
+E = "M81.7 20.1H107.2V24H93.5V25H107.5V29H93.5V45H107V49.3H81.7Z"
+A = "M107.2 49.3L122.3 19.8H126.6L142.3 49.3H128.7L126.5 45H113.6L112 49.3ZM119.85 33L123.75 40.2H116.05Z"
+L = "M144 19.8H156.6V44.4H169.5V49.3H144Z"
+I = "M171.9 20H184.7V49.3H171.9ZM175.3 11.2H181.7V17.6H175.3Z"
+S = ("M202 19.4C206.5 19.4 210.5 20.6 212.6 23.2V24.8C212.2 25.8 210.9 26.8 209.6 27.2C208.8 26.4 207.2 25 205 24.3"
+  "C203.6 24 201 24 200 24.4C199.2 25 199.4 26.2 201.5 26.7C205.5 27.3 210.5 28.6 213.5 30.8C216 32.6 217.2 35 217.2 38.5"
+  "L216.5 42C215 47 209.5 49.4 203 49.4C196.5 49.4 191.5 47 190 43.5L188.9 40.5C188.9 38 189.6 36.2 190.9 35.2H192.5L196.8 38.3"
+  "C195 39.5 194.3 40.5 194.4 42C194.6 44 197 45.2 201 45.2C205 45.2 209.7 44 209.7 41.5C209.7 39.6 207.6 38.6 203 37.9"
+  "C199 37 195.5 35.8 193.3 34.6C191 33 189.9 31 189.9 28.5C189.9 23 195 19.4 202 19.4Z")
+T = "M217 19.5H247V23.6H238.5V49.3H225.7V23.6H217Z"
+def svg(grey, red):
+  return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 247 56" width="247" height="56" role="img" aria-label="İdealist Mühendislik">'
+    f'<path fill="{grey}" fill-rule="evenodd" d="{GREY_SW}{I}{S}{T}"/>'
+    f'<path fill="{red}" fill-rule="evenodd" d="{RING}{D}{E}{A}{L}"/></svg>\n')
+out=sys.argv[1]
+open(out+'/logo.svg','w').write(svg('#9c9c9c','#e3000f'))
+open(out+'/logo-light.svg','w').write(svg('#ffffff','#e3000f'))
