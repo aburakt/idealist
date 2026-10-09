@@ -1,6 +1,7 @@
 ---
 // Orijinal İdealist logosu (eski sitenin 247x56 PNG'sinden birebir vektöre çevrildi): public/logo.svg.
-interface Props { class?: string }
-const { class: cls } = Astro.props
+// tone="light": koyu zemin için gri kısımları beyaz varyant (public/logo-light.svg), şekil aynı.
+interface Props { class?: string; tone?: "dark" | "light" }
+const { class: cls, tone = "dark" } = Astro.props
 ---
-<img src="/logo.svg" width="247" height="56" alt="İdealist Mühendislik" class={cls} />
+<img src={tone === "light" ? "/logo-light.svg" : "/logo.svg"} width="247" height="56" alt="İdealist Mühendislik" class={cls} />
