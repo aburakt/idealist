@@ -126,9 +126,9 @@ const collectionLabel = (k) => LABELS.collections?.[k]
 
 // Koleksiyon ve alan adları yalnız bu bölgelerde çevrilir; kayıt içeriğinde aynı kelime geçse dokunulmaz.
 const COLLECTION_SCOPE = ".sidebar-content, .collections-sidebar, .breadcrumbs, .collection-name, .modal-title, .dropdown-item, .page-header"
-const FIELD_SCOPE = "thead th, .record-field label, .form-field label, .field > label, .dropdown-item label, .toggle-columns label"
+const FIELD_SCOPE = "thead th, label"
 const SKIP = "input, textarea, code, pre, .cm-editor, .code-editor, .tox, td.col-type-text, td .txt-ellipsis"
-const ATTRS = ["placeholder", "title", "aria-label", "alt"]
+const ATTRS = ["placeholder", "data-placeholder", "title", "aria-label", "alt"]
 
 function translate(raw, el) {
   const key = raw.trim()
