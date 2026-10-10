@@ -1,0 +1,11 @@
+{
+  "collections": {
+    "settings": "Site ayarları", "pages": "Sayfalar", "services": "Hizmetler", "areas": "Faaliyet alanları",
+    "projects": "Projeler", "posts": "Blog yazıları"
+  },
+  "fields": {
+    "about_summary": "Hakkımızda özeti", "founded_year": "Kuruluş yılı", "projects.areas": "Faaliyet alanları", "usage": "Kullanım türü",
+    "client": "İşveren", "architect": "Mimari ofis", "area_m2": "İnşaat alanı (m²)", "areas.title_en": "Ad (İngilizce)",
+    "services.title_en": "Ad (İngilizce)", "projects.name": "Proje adı"
+  }
+}
