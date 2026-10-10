@@ -3,7 +3,7 @@
 ebsbilgisayar/jciankara ile aynı düzen. Port 8098 önerilir (8095 expertup, 8096 jci, 8097 ebs; kurmadan önce `ss -ltnp | grep 809` ile boş olduğunu doğrulayın).
 
 ## 1. PocketBase (VPS)
-1. `/opt/pb-idealist/` altına PB 0.40.4 binary'si (`PB_VERSION`), repodan `pb/pb_migrations/` ve `pb/pb_hooks/` (lib/ dahil).
+1. `/opt/pb-idealist/` altına PB 0.40.4 binary'si (`PB_VERSION`), repodan `pb/pb_migrations/` ve `pb/pb_hooks/` (lib/ ve panel/ dahil).
 2. `/opt/pb-idealist/.env` (root, 600): `CF_PAGES_DEPLOY_HOOK=…` (Cloudflare Pages deploy hook), `DEPLOY_QUIET_MS=45000`, `PB_ENCRYPTION_KEY=…`.
 3. systemd `pb-idealist.service`: `pocketbase serve --http=127.0.0.1:8098 --dir /opt/pb-idealist/pb_data --migrationsDir … --hooksDir …` (pb-ebs unit'inin kopyası). İlk açılışta migration şemayı, iki sabit sayfayı, panel adını, yedek/rate limit ayarlarını kurar.
 4. Superuser: `pocketbase superuser upsert <e-posta> <parola> --dir /opt/pb-idealist/pb_data`; parola `/root/.pb-secrets`.
