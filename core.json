@@ -1,6 +1,7 @@
 {
   "files": [
     ".github/workflows/ci.yml",
+    ".github/workflows/core-sync.yml",
     "PB_VERSION",
     "core.json",
     "pb/pb_hooks/core.pb.js",
