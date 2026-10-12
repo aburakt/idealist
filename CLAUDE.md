@@ -12,6 +12,7 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 
 ## Core
 - Ortak dosyalar `aburakt/astro-pb-template`'ten gelir (`core.json` listesi, `core.lock` sürümü); sitede elle değiştirilmez, `bun run core:sync [etiket]` ile güncellenir (`tests/core.test.ts` ölçer). Değişiklik template'te yapılır.
+- Template core'u değişince `.github/workflows/core-sync.yml` (core) haftalık `core-sync` dalından PR açar; repo sırrı `CORE_SYNC_TOKEN` gerekir. Sunucuya dağıtım elle yapılır.
 - Müşteri kısıtlı superuser'dır (`pb_hooks/lib/guard.js`, core): `PB_AGENCY_EMAILS`'te (sunucu `.env`) olmayan superuser yalnız içerik kayıtlarını ve kendi şifresini düzenler; şema, ayar, yedek ve hesap yönetimi ajansa açık.
 - Siteye özel ayarlar: `pb/pb_hooks/site.js` (ID, CONTENT, panel korumaları RULES), `site.config.ts` (verify sayfa kontrolleri, hook testi kaydı), `pb/pb_hooks/panel/labels.json`.
 

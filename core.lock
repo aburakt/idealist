@@ -1,11 +1,12 @@
 {
   "source": "https://github.com/aburakt/astro-pb-template",
   "ref": "main",
-  "commit": "aaf88773c3e9300c300d1936a721f4e1b77dc0ae",
+  "commit": "93fae374a9d1cb21fefbe3ef974d590549e15acd",
   "files": {
     ".github/workflows/ci.yml": "d09dd0be23c13a7a816118c9e1ad88390991b8a0b5bf0dc8a9e74a6a1f2fe2e9",
+    ".github/workflows/core-sync.yml": "79f3662fb13187062a469d4e681b55dd999fe98647d97ce17fc42f9f1a170c8d",
     "PB_VERSION": "b5ef20402575ae74e37726230e19cd5f5f79d3a9d5bfa86a398026909c108eb7",
-    "core.json": "9fd708098b1222f08298a80599cb99591120875858880b995a1e4049a6ca6cf6",
+    "core.json": "98f0ce860ac57de361f7689fb687fc333bb3466394ff6386b68b57c1d39ab350",
     "pb/pb_hooks/core.pb.js": "73ca4ab7cb1ac65747b3920b01194f417853cdafb6dea32ae6559c86cb3d77d5",
     "pb/pb_hooks/guard.pb.js": "978aa411c7abb731badb43475b8cafea3f27e8085b7ced813fe0768285e41680",
     "pb/pb_hooks/lib/deploy.js": "da1926700c486e392f30e3c1454f6dbccb8fae8fd1a57a256653cff954dd23e8",
