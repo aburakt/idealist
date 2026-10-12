@@ -1,3 +1,4 @@
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { join } from "node:path"
 import { startPb, type Pb } from "../scripts/pb-harness"

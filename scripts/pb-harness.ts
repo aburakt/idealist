@@ -3,7 +3,10 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { ensurePocketBase } from "./pb-binary"
 
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez.
 const ROOT = join(import.meta.dir, "..")
+/** pb/pb_hooks/site.js içindeki kısa site adı (test dizini ve hesap öneki). */
+export const SITE_ID: string = (require(join(ROOT, "pb", "pb_hooks", "site.js")) as { ID: string }).ID
 
 export type Pb = {
   url: string
@@ -31,14 +34,14 @@ function withJson(init: RequestInit = {}, token?: string): RequestInit {
 /** Geçici dizinde, repodaki migration ve hook'larla bir PocketBase başlatır. */
 export async function startPb(env: Record<string, string> = {}): Promise<Pb> {
   const bin = await ensurePocketBase()
-  const dir = mkdtempSync(join(tmpdir(), "idealist-pb-"))
+  const dir = mkdtempSync(join(tmpdir(), `${SITE_ID}-pb-`))
   const dataDir = join(dir, "pb_data")
   const common = [
     "--dir", dataDir,
     "--migrationsDir", join(ROOT, "pb", "pb_migrations"),
     "--hooksDir", join(ROOT, "pb", "pb_hooks"),
   ]
-  const email = "verify@idealist.test"
+  const email = `verify@${SITE_ID}.test`
   const password = `Verify-${crypto.randomUUID()}`
 
   const up = Bun.spawnSync([bin, "superuser", "upsert", email, password, ...common])

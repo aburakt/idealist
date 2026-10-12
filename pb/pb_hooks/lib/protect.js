@@ -1,21 +1,18 @@
 /// <reference path="../../pb_data/types.d.ts" />
 
-// Panel korumaları. Müşteri superuser olduğu için API kuralları değil, istek (request) hook'ları kullanılır;
-// panele de API'ye de uygulanır, migration ve sistem işlerini etkilemez.
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez. Kurallar pb_hooks/site.js RULES'ta.
 //
-// - settings (Site Ayarları): tek kayıt; ikinci kayıt açılamaz, silinemez (silinse site telefon/adres bilgisini kaybeder, build kırılır).
-// - pages: iki sabit sayfa (Hakkımızda, İngilizce sayfa); yeni kayıt açılamaz, silinemez, gizlenemez, adresi değiştirilemez.
-// - areas: faaliyet alanı silinemez (projeler ona bağlı); gizlemek için yayın işareti kaldırılır. Adres addan üretilir, kilitlenir.
-// - projects: adres (slug) boşsa addan üretilir; kaydedildikten sonra değiştirilemez.
-// - posts (Blog): adres (slug) boşsa başlıktan üretilir; kaydedildikten sonra değiştirilemez.
+// Panel korumaları. Müşteri superuser olduğu için API kuralları değil, istek (request) hook'ları kullanılır;
+// panele de API'ye de uygulanır, migration ve sistem işlerini etkilemez. Kural alanları:
+// - label: hata iletisinde görünen ad
+// - singleton: tek kayıt; ikinci kayıt açılamaz
+// - noCreate: yeni kayıt açılamaz (sabit sayfalar)
+// - noDelete: silinemez; deleteHint iletinin ikinci yarısı (varsayılan: "metni değiştirin.")
+// - alwaysPublished: "published" işareti kaldırılamaz
+// - slugFrom: slug boşsa bu alandan üretilir (Türkçe karakterler sadeleşir, benzersiz yapılır)
+// - locked: kaydedildikten sonra değiştirilemeyen alanlar (adres, anahtar)
 
-const RULES = {
-  settings: { label: "Site Ayarları", singleton: true, noDelete: true },
-  pages: { label: "Sayfalar", noCreate: true, noDelete: true, locked: ["slug"], alwaysPublished: true },
-  areas: { label: "Faaliyet alanları", noDelete: true, slugFrom: "title", locked: ["slug"] },
-  projects: { slugFrom: "name", locked: ["slug"] },
-  posts: { slugFrom: "title", locked: ["slug"] },
-}
+const rules = () => require(`${__hooks}/site.js`).RULES
 
 function slugify(s) {
   const map = { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", â: "a", î: "i", û: "u" }
@@ -48,7 +45,7 @@ function fillSlug(record, rule) {
 
 function beforeCreate(e) {
   const name = e.record.collection().name
-  const rule = RULES[name]
+  const rule = rules()[name]
   if (!rule) return
   if (rule.noCreate) throw new BadRequestError(`${rule.label} koleksiyonuna yeni kayıt eklenemez; var olan kayıtları düzenleyin.`)
   if (rule.singleton && $app.countRecords(name) > 0) throw new BadRequestError(`${rule.label} tek kayıttır; yeni kayıt açmak yerine var olan kaydı düzenleyin.`)
@@ -56,8 +53,7 @@ function beforeCreate(e) {
 }
 
 function beforeUpdate(e) {
-  const name = e.record.collection().name
-  const rule = RULES[name]
+  const rule = rules()[e.record.collection().name]
   if (!rule) return
   const original = e.record.original()
   for (const field of rule.locked || []) {
@@ -71,9 +67,8 @@ function beforeUpdate(e) {
 }
 
 function beforeDelete(e) {
-  const name = e.record.collection().name
-  const rule = RULES[name]
-  if (rule && rule.noDelete) throw new BadRequestError(`${rule.label} kayıtları silinemez; metni değiştirin ya da yayın işaretini kaldırın.`)
+  const rule = rules()[e.record.collection().name]
+  if (rule && rule.noDelete) throw new BadRequestError(`${rule.label} kayıtları silinemez; ${rule.deleteHint || "metni değiştirin."}`)
 }
 
-module.exports = { RULES, slugify, beforeCreate, beforeUpdate, beforeDelete }
+module.exports = { slugify, beforeCreate, beforeUpdate, beforeDelete }

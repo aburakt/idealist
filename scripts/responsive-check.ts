@@ -1,3 +1,4 @@
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 import { readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 

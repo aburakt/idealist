@@ -1,6 +1,8 @@
 /// <reference path="../../pb_data/types.d.ts" />
 
-const KEY = "idealist_deploy_dirty_at"
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez.
+// Her sitenin kendi PB süreci olduğu için store anahtarı sabit olabilir.
+const KEY = "deploy_dirty_at"
 
 function quietMs() {
   return parseInt($os.getenv("DEPLOY_QUIET_MS"), 10) || 45 * 1000

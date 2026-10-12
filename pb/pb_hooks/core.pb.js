@@ -1,46 +1,50 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+// ORTAK (core): template'ten `bun run core:sync` ile gelir, sitede elle değiştirilmez.
+// Siteye özel değerler (ID, içerik koleksiyonları, panel korumaları) pb_hooks/site.js'te.
 // Not: hook handler'ları izole çalışır; ortak kod handler içinde require() ile yüklenir.
-// Yeni içerik koleksiyonu eklenirse BURAYA da eklenir; yoksa değişiklik siteye yansımaz.
-const CONTENT = ["settings", "pages", "services", "areas", "projects", "posts"]
+// Üst düzeydeki değerler yalnız kayıt sırasında (hangi koleksiyon, hangi adres) kullanılır.
+const SITE = require(`${__hooks}/site.js`)
+const PROTECTED = Object.keys(SITE.RULES)
 
+// İçerik değişince Cloudflare Pages yeniden yayınlansın: değişiklik işaretlenir, cron sessizlikten sonra tetikler.
 onRecordAfterCreateSuccess((e) => {
   require(`${__hooks}/lib/deploy.js`).markDirty(e.app)
   e.next()
-}, ...CONTENT)
+}, ...SITE.CONTENT)
 
 onRecordAfterUpdateSuccess((e) => {
   require(`${__hooks}/lib/deploy.js`).markDirty(e.app)
   e.next()
-}, ...CONTENT)
+}, ...SITE.CONTENT)
 
 onRecordAfterDeleteSuccess((e) => {
   require(`${__hooks}/lib/deploy.js`).markDirty(e.app)
   e.next()
-}, ...CONTENT)
+}, ...SITE.CONTENT)
 
-// Panel korumaları (tek kayıt, sabit sayfalar, kilitli adresler): kurallar lib/protect.js'te.
+// Panel korumaları (tek kayıt, sabit kayıtlar, kilitli adresler): kurallar site.js RULES'ta, uygulama lib/protect.js'te.
 onRecordCreateRequest((e) => {
   require(`${__hooks}/lib/protect.js`).beforeCreate(e)
   e.next()
-}, "settings", "pages", "areas", "projects", "posts")
+}, ...PROTECTED)
 
 onRecordUpdateRequest((e) => {
   require(`${__hooks}/lib/protect.js`).beforeUpdate(e)
   e.next()
-}, "settings", "pages", "areas", "projects", "posts")
+}, ...PROTECTED)
 
 onRecordDeleteRequest((e) => {
   require(`${__hooks}/lib/protect.js`).beforeDelete(e)
   e.next()
-}, "settings", "pages", "areas")
+}, ...PROTECTED)
 
-cronAdd("idealist_deploy", "* * * * *", () => {
+cronAdd(`${SITE.ID}_deploy`, "* * * * *", () => {
   require(`${__hooks}/lib/deploy.js`).flush($app, false)
 })
 
-// Elle yeniden yayınlama: POST /api/idealist/deploy (superuser token ile)
-routerAdd("POST", "/api/idealist/deploy", (e) => {
+// Elle yeniden yayınlama: POST /api/<ID>/deploy (superuser token ile)
+routerAdd("POST", `/api/${SITE.ID}/deploy`, (e) => {
   const result = require(`${__hooks}/lib/deploy.js`).flush(e.app, true)
   return e.json(result.ok ? 200 : 500, result)
 }, $apis.requireSuperuserAuth())

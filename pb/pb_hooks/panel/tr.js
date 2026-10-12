@@ -1,3 +1,4 @@
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 // PocketBase yönetim panelinin Türkçe katmanı. panel-tr.pb.js bunu /_/extensions.js olarak sunar.
 // Yalnız ekrandaki yazıyı değiştirir: veriye, API'ye ve kayıt içeriğine dokunmaz. Sözlükte olmayan metin İngilizce kalır.
 // Kapsam müşterinin gördüğü ekranlardır (giriş, içerik listesi, kayıt formu, onay ve bildirimler); Ayarlar ve Loglar çevrilmez.

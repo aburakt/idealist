@@ -1,4 +1,5 @@
 /// <reference path="../.astro/types.d.ts" />
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 interface ImportMetaEnv {
   readonly PB_URL?: string
   readonly PUBLIC_SITE_URL?: string
