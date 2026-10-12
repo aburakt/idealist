@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { SITE_ID, startPb } from "./pb-harness"
 import { seed } from "./seed"
 import { SITE } from "../site.config"
+import type { Check } from "./site-types"
 
 // ORTAK (core): template'ten gelir, sitede elle değiştirilmez. Siteye özel sayfa kontrolleri site.config.ts'te.
 
@@ -24,14 +25,24 @@ function walk(dir: string): string[] {
   })
 }
 const htmlOf = (dir: string) => Object.fromEntries(walk(dir).filter((f) => f.endsWith(".html")).map((f) => [f.slice(dir.length), readFileSync(f, "utf8")]))
-/** Görünen metin: etiketler, betikler, önizleme bandı ve boşluk farkları atılır. */
+/** Görünen metin: etiketler, betikler, önizleme bandı/notları, formlar (önizlemede kapalı olabilir) ve boşluk farkları atılır. */
 const visible = (html: string): string =>
-  html.replace(/<(script|style|svg)[\s\S]*?<\/\1>/g, "").replace(/<p data-fixture-banner[\s\S]*?<\/p>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
+  html.replace(/<(script|style|svg|form)[\s\S]*?<\/\1>/g, "").replace(/<p data-fixture-[\w-]+[\s\S]*?<\/p>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
 
 
-async function runChecks(base: string): Promise<boolean> {
+async function serveAndCheck(checks: Check[]): Promise<boolean> {
+  const server = serve()
+  try {
+    const pages = await runChecks(`http://127.0.0.1:${server.port}`, checks)
+    return distChecks() && pages
+  } finally {
+    server.stop(true)
+  }
+}
+
+async function runChecks(base: string, checks: Check[] = SITE.checks): Promise<boolean> {
   let all = true
-  for (const c of SITE.checks) {
+  for (const c of checks) {
     const res = await fetch(base + c.path)
     const body = await res.text()
     const want = c.status ?? 200
@@ -108,13 +119,18 @@ async function main(): Promise<number> {
   all = report(diff.length === 0, "PB ve fixture aynı metni üretir", `${diff.length} sayfa farklı: ${diff.slice(0, 4).join(", ")}`) && all
   rmSync(fixtureDir, { recursive: true, force: true })
 
-  const server = serve()
+  all = (await serveAndCheck(SITE.checks)) && all
+  if (!SITE.testSeed || !SITE.testChecks?.length) return all ? 0 : 1
+
+  out("— Test verisiyle PB build (taslak, çevirisiz kayıt, panel görseli gibi durumlar)")
+  const test = await startPb()
   try {
-    all = (await runChecks(`http://127.0.0.1:${server.port}`)) && all
-    all = distChecks() && all
+    await SITE.testSeed(test)
+    if (!report(build({ PB_URL: test.url }).exitCode === 0, "Test verisiyle PB build", "çıkış kodu ≠ 0")) return 1
   } finally {
-    server.stop(true)
+    await test.stop()
   }
+  all = (await serveAndCheck(SITE.testChecks)) && all
   return all ? 0 : 1
 }
 

@@ -1,17 +1,6 @@
 // SİTEYE ÖZEL: ortak betikler (scripts/verify.ts, tests/hooks.test.ts) bu dosyayı okur.
 // PB tarafındaki karşılığı pb/pb_hooks/site.js (ID, içerik koleksiyonları, panel korumaları).
-
-/** Build çıktısında kontrol edilen sayfa: durum kodu, içinde olması ve olmaması gereken metinler. */
-export type Check = { name: string; path: string; status?: number; has?: string[]; hasNot?: string[] }
-
-export type SiteConfig = {
-  /** `bun run verify` build'den sonra bunları hem fixture hem PB içeriğiyle kontrol eder. */
-  checks: Check[]
-  /** Yayın hook'u testi için içerik koleksiyonunda açılıp düzenlenecek basit kayıt (zorunlu alanlarıyla). */
-  hookSample: { collection: string; create: Record<string, unknown>; update: (n: number) => Record<string, unknown> }
-  /** true ise sayfada dış adresli görsel kabul edilir (CSP img-src 'self' kullanmayan siteler). */
-  externalImages?: boolean
-}
+import type { SiteConfig } from "./scripts/site-types"
 
 export const SITE: SiteConfig = {
   checks: [

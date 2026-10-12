@@ -7,7 +7,8 @@ import { checkLock } from "../scripts/core-sync"
 // ORTAK (core): template'ten gelir, sitede elle değiştirilmez. Her sitede aynı standartları ölçer:
 // core dosyaları elle değişmemiş, şema kuralları, panelin müşteriye hazır olması, inline stil/betik yok.
 const ROOT = join(import.meta.dir, "..")
-const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as { ID: string; CONTENT: string[]; RULES: Record<string, unknown> }
+const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as { ID: string; CONTENT: string[]; RULES: Record<string, unknown>; FORMS?: string[] }
+const FORMS = site.FORMS ?? []
 
 type Field = { name: string; type: string; help: string; system: boolean; hidden: boolean; presentable: boolean }
 type Collection = {
@@ -35,14 +36,19 @@ describe("core", () => {
 
 describe("şema standardı", () => {
   test("site.js CONTENT şemadaki koleksiyonların tamamı (yeni koleksiyon yayın hook'una da eklenir)", () => {
-    expect([...site.CONTENT].sort()).toEqual(cols.map((c) => c.name).sort())
+    expect([...site.CONTENT].sort()).toEqual(cols.map((c) => c.name).filter((n) => !FORMS.includes(n)).sort())
   })
   test("RULES yalnız var olan koleksiyonları anar", () => {
     expect(Object.keys(site.RULES).filter((n) => !cols.some((c) => c.name === n))).toEqual([])
   })
-  test("yazma yalnız superuser; okuma herkese açık ya da published = true ile sınırlı", () => {
+  test("yazma yalnız superuser; okuma herkese açık ya da published = true ile sınırlı (FORMS: ziyaretçi yalnız gönderir)", () => {
     const bad: string[] = []
     for (const c of cols) {
+      if (FORMS.includes(c.name)) {
+        // ziyaretçi gönderir (createRule açık), yalnız superuser okur ve yönetir
+        for (const k of ["listRule", "viewRule", "updateRule", "deleteRule"] as const) if (c[k] !== null) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
+        continue
+      }
       for (const k of ["createRule", "updateRule", "deleteRule"] as const) if (c[k] !== null) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
       for (const k of ["listRule", "viewRule"] as const) {
         const r = c[k]
