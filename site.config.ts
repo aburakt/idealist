@@ -1,5 +1,6 @@
 // SİTEYE ÖZEL: ortak betikler (scripts/verify.ts, tests/hooks.test.ts) bu dosyayı okur.
 // PB tarafındaki karşılığı pb/pb_hooks/site.js (ID, içerik koleksiyonları, panel korumaları).
+import { GEO_CHECKS } from "./scripts/geo-check"
 import type { SiteConfig } from "./scripts/site-types"
 
 export const SITE: SiteConfig = {
@@ -17,7 +18,11 @@ export const SITE: SiteConfig = {
     { name: "Yönlendirmeler build çıktısında", path: "/_redirects", has: ["/projects.html /projeler/ 301", "/en.html /en/ 301"] },
     { name: "404 sayfası", path: "/yok-boyle-bir-sayfa/", status: 404, has: ["Sayfa bulunamadı"] },
     { name: "Sitemap", path: "/sitemap-index.xml" },
-    { name: "Robots", path: "/robots.txt", has: ["Sitemap:"] },
+    // GEO ve WebMCP (lib/geo.ts): ortak kontroller, sonra bu sitenin içeriği
+    ...GEO_CHECKS,
+    { name: "GEO: llms.txt bölümleri", path: "/llms.txt", has: ["## Hakkımızda", "## Hizmetler", "## Faaliyet Alanları", "## Projeler", "## Blog", "## English", "/projeler/merkez-ankara/", "/en/"] },
+    { name: "GEO: proje sayfasının markdown eşi", path: "/projeler/merkez-ankara/index.md", has: ["Pasifik Çiftay İş Ortaklığı", "1.333.255 m²"] },
+    { name: "GEO: İngilizce sayfanın markdown eşi", path: "/en/index.md", has: ["Idealist Engineering"] },
   ],
   hookSample: {
     // hizmet: zorunlu alanı yalnız title + icon

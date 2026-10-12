@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://www.idealistmuhendislik.com.tr/sitemap-index.xml
