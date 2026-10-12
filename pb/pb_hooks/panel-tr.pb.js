@@ -3,11 +3,17 @@
 // ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 
 // Yönetim panelini Türkçe gösterir. Panel (PocketBase 0.37+) açılışta /_/extensions.js dosyasını yükler; resmi kayıt yolu
-// yalnız Go'da olduğu için isteği burada yakalayıp panel/tr.js'i site etiketleriyle (panel/labels.json) birlikte döndürürüz.
+// yalnız Go'da olduğu için isteği burada yakalayıp panel/tr.js'i etiketlerle birlikte döndürürüz: core koleksiyonlarının
+// etiketleri panel/core-labels.json'da, sitenin etiketleri panel/labels.json'da (aynı anahtarda site kazanır).
 // Dosya bozulur ya da PB bu adresi değiştirirse panel İngilizce çalışmaya devam eder.
 routerUse((e) => {
   if (e.request.method !== "GET" || e.request.url.path !== "/_/extensions.js") return e.next()
-  const labels = toString($os.readFile(__hooks + "/panel/labels.json"))
+  const core = JSON.parse(toString($os.readFile(__hooks + "/panel/core-labels.json")))
+  const site = JSON.parse(toString($os.readFile(__hooks + "/panel/labels.json")))
+  const labels = JSON.stringify({
+    collections: Object.assign({}, core.collections, site.collections),
+    fields: Object.assign({}, core.fields, site.fields),
+  })
   const js = toString($os.readFile(__hooks + "/panel/tr.js"))
   e.response.header().set("Content-Type", "text/javascript; charset=utf-8")
   e.response.header().set("Cache-Control", "no-cache")

@@ -9,6 +9,8 @@ import { checkLock } from "../scripts/core-sync"
 const ROOT = join(import.meta.dir, "..")
 const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as { ID: string; CONTENT: string[]; RULES: Record<string, unknown>; FORMS?: string[] }
 const FORMS = site.FORMS ?? []
+// core'un kendi koleksiyonları (core migration'larıyla gelir): içerik değil, yayın tetiklemez, yalnız superuser okur
+const CORE_COLLECTIONS = ["audit_log"]
 
 type Field = { name: string; type: string; help: string; system: boolean; hidden: boolean; presentable: boolean }
 type Collection = {
@@ -36,7 +38,7 @@ describe("core", () => {
 
 describe("şema standardı", () => {
   test("site.js CONTENT şemadaki koleksiyonların tamamı (yeni koleksiyon yayın hook'una da eklenir)", () => {
-    expect([...site.CONTENT].sort()).toEqual(cols.map((c) => c.name).filter((n) => !FORMS.includes(n)).sort())
+    expect([...site.CONTENT].sort()).toEqual(cols.map((c) => c.name).filter((n) => !FORMS.includes(n) && !CORE_COLLECTIONS.includes(n)).sort())
   })
   test("RULES yalnız var olan koleksiyonları anar", () => {
     expect(Object.keys(site.RULES).filter((n) => !cols.some((c) => c.name === n))).toEqual([])
@@ -44,6 +46,10 @@ describe("şema standardı", () => {
   test("yazma yalnız superuser; okuma herkese açık ya da published = true ile sınırlı (FORMS: ziyaretçi yalnız gönderir)", () => {
     const bad: string[] = []
     for (const c of cols) {
+      if (CORE_COLLECTIONS.includes(c.name)) {
+        for (const k of ["listRule", "viewRule", "createRule", "updateRule", "deleteRule"] as const) if (c[k] !== null) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
+        continue
+      }
       if (FORMS.includes(c.name)) {
         // ziyaretçi gönderir (createRule açık), yalnız superuser okur ve yönetir
         for (const k of ["listRule", "viewRule", "updateRule", "deleteRule"] as const) if (c[k] !== null) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)

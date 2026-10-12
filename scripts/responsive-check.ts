@@ -2,7 +2,7 @@
 import { readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 
-// Yerel kontrol (Bun.WebView gerekir; CI'da koşmaz): fixture build'indeki her sayfayı birçok genişlikte açar,
+// Bun.WebView gerekir (macOS'ta WebKit; Linux/CI'da Chrome: BUN_CHROME_PATH, ci.yml responsive işi). Fixture build'indeki her sayfayı birçok genişlikte açar,
 // yatay taşmayı, ekran dışına çıkan öğeleri ve dönen kelimeli başlıklarda ([data-rotate]) düzen kaymasını ölçer.
 const ROOT = join(import.meta.dir, "..")
 const DIST = join(ROOT, "site", "dist")
@@ -26,7 +26,7 @@ const OVERFLOW = `(() => {
   for (const el of document.querySelectorAll('main *, header *, footer *')) {
     if (el.closest('[aria-hidden="true"]')) continue
     const r = el.getBoundingClientRect()
-    if (r.width === 0 || r.height === 0) continue
+    if (r.width <= 1 || r.height <= 1) continue // gizli ya da yalnız ekran okuyucuya (sr-only) görünen öğe
     if (el.tagName === 'H1' && el.scrollWidth > el.clientWidth + 1) res.bad.push('h1 içeriği kutusundan geniş: ' + el.scrollWidth + ' > ' + el.clientWidth)
     if (['P','LI','H1','H2','H3','A','DD','DT','SPAN'].includes(el.tagName) && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).display !== 'inline') res.bad.push('metin kutusundan taşıyor: ' + el.tagName.toLowerCase() + ' ' + el.scrollWidth + ' > ' + el.clientWidth + ' ' + (el.textContent || '').trim().slice(0, 24))
     if ((r.right > vw + 1 || r.left < -1) && !clipped(el)) res.bad.push(el.tagName.toLowerCase() + ' [' + Math.round(r.left) + ',' + Math.round(r.right) + '] ' + (el.textContent || '').trim().slice(0, 28))

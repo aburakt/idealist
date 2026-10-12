@@ -1,6 +1,6 @@
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { SITE_ID, startPb } from "./pb-harness"
 import { seed } from "./seed"
 import { SITE } from "../site.config"
@@ -29,6 +29,123 @@ const htmlOf = (dir: string) => Object.fromEntries(walk(dir).filter((f) => f.end
 const visible = (html: string): string =>
   html.replace(/<(script|style|svg|form)[\s\S]*?<\/\1>/g, "").replace(/<p data-fixture-[\w-]+[\s\S]*?<\/p>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
 
+// — Erişilebilirlik ve performans bütçesi (bağımlılıksız; build çıktısındaki her HTML üzerinde) —
+
+type Tag = { name: string; close: boolean; attrs: Record<string, string>; at: number; end: number }
+const TAG = /<(\/?)([a-zA-Z][\w:-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g
+const ATTR = /([^\s=/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g
+
+/** Yorumlar ve script/style/template içleri atılmış HTML'in etiketleri (öznitelikleri küçük harf adlarıyla). */
+function tags(html: string): { src: string; list: Tag[] } {
+  const src = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style|template)\b([^>]*)>[\s\S]*?<\/\1>/gi, "<$1$2></$1>")
+  const list = [...src.matchAll(TAG)].map((m) => {
+    const attrs: Record<string, string> = {}
+    for (const a of m[3].matchAll(ATTR)) attrs[a[1].toLowerCase()] = a[2] ?? a[3] ?? a[4] ?? ""
+    return { name: m[2].toLowerCase(), close: m[1] === "/", attrs, at: m.index, end: m.index + m[0].length }
+  })
+  return { src, list }
+}
+
+/** Sayfadaki erişilebilirlik sorunları: [kural, ayrıntı]. */
+export function a11yProblems(html: string): [string, string][] {
+  const { src, list } = tags(html)
+  const bad: [string, string][] = []
+  const opens = list.filter((t) => !t.close)
+  const html0 = opens.find((t) => t.name === "html")
+  if (!html0?.attrs.lang) bad.push(["<html lang>", "lang yok"])
+  for (const t of opens) if (t.name === "img" && !("alt" in t.attrs)) bad.push(["img alt", t.attrs.src ?? "?"])
+  const heads = opens.filter((t) => /^h[1-6]$/.test(t.name)).map((t) => Number(t.name[1]))
+  const h1 = heads.filter((h) => h === 1).length
+  if (h1 !== 1) bad.push(["tek h1", `${h1} adet`])
+  heads.forEach((h, i) => { if (i > 0 && h > heads[i - 1] + 1) bad.push(["başlık sırası", `h${heads[i - 1]}→h${h}`]) })
+  // a ve button: içerik metni, aria-label/aria-labelledby/title ya da içteki görselin alt'ı
+  for (const t of opens.filter((x) => x.name === "a" || x.name === "button")) {
+    const close = list.find((x) => x.close && x.name === t.name && x.at > t.at)
+    const inner = src.slice(t.end, close?.at ?? t.end)
+    const named = (a: Record<string, string>) => !!(a["aria-label"]?.trim() || a["aria-labelledby"]?.trim() || a.title?.trim())
+    const text = inner.replace(/<[^>]*>/g, "").replace(/&nbsp;|&#160;/g, "").trim()
+    const kids = tags(inner).list.filter((x) => !x.close)
+    const ok = named(t.attrs) || text !== "" || kids.some((k) => named(k.attrs) || (k.name === "img" && k.attrs.alt?.trim()))
+    if (!ok) bad.push([`${t.name} adı`, t.attrs.href ?? t.attrs.class ?? "?"])
+  }
+  // Form denetimleri: saran <label>, <label for>, aria-label ya da aria-labelledby
+  const fors = new Set(opens.filter((t) => t.name === "label" && t.attrs.for).map((t) => t.attrs.for))
+  let inLabel = 0
+  for (const t of list) {
+    if (t.name === "label") inLabel += t.close ? -1 : 1
+    if (t.close || !["input", "select", "textarea"].includes(t.name)) continue
+    if (t.name === "input" && ["hidden", "submit", "button", "reset", "image"].includes(t.attrs.type ?? "")) continue
+    const a = t.attrs
+    if (inLabel > 0 || (a.id && fors.has(a.id)) || a["aria-label"]?.trim() || a["aria-labelledby"]?.trim()) continue
+    bad.push(["form etiketi", `${t.name}${a.name ? ` name=${a.name}` : ""}`])
+  }
+  const seen = new Set<string>()
+  for (const t of opens) {
+    const id = t.attrs.id
+    if (id === undefined) continue
+    if (seen.has(id)) bad.push(["tekrarlanan id", id])
+    seen.add(id)
+  }
+  return bad
+}
+
+const kb = (n: number) => Math.round(n / 102.4) / 10
+/** Aynı kaynaktan yerel dosya yolu (dış adres ve data: atlanır). */
+function local(ref: string, page: string): string | null {
+  if (!ref || /^(?:[a-z]+:|\/\/|#)/i.test(ref)) return null
+  const p = decodeURI(ref.split(/[?#]/)[0])
+  const f = p.startsWith("/") ? join(DIST, p) : join(dirname(page), p)
+  return existsSync(f) && statSync(f).isFile() ? f : null
+}
+/** JS modülünün statik import'ları (Astro parçaları) da sayfanın yüküdür. */
+function withImports(file: string, acc: Set<string>) {
+  if (acc.has(file)) return
+  acc.add(file)
+  if (!file.endsWith(".js")) return
+  for (const m of readFileSync(file, "utf8").matchAll(/\bimport\s*(?:[\w*{}\s,$]+from\s*)?["']([^"']+\.js)["']/g)) {
+    const f = local(m[1], file)
+    if (f) withImports(f, acc)
+  }
+}
+
+/** Sayfa başına gzip'li HTML + CSS + JS toplamı ve en büyük yerel görsel. */
+export function pageWeight(page: string): { kb: number; image: { kb: number; file: string } } {
+  const html = readFileSync(page, "utf8")
+  const assets = new Set<string>()
+  let image = { kb: 0, file: "" }
+  for (const t of tags(html).list) {
+    if (t.close) continue
+    const a = t.attrs
+    const rel = (a.rel ?? "").toLowerCase()
+    const code = t.name === "script" ? a.src : t.name === "link" && /\b(stylesheet|modulepreload)\b/.test(rel) ? a.href : undefined
+    const f = code ? local(code, page) : null
+    if (f) withImports(f, assets)
+    const imgs = [a.src && (t.name === "img" || t.name === "source") ? a.src : "", ...(a.srcset ?? "").split(",").map((s) => s.trim().split(/\s+/)[0]), t.name === "link" && a.as === "image" ? a.href : ""]
+    if (t.name === "img" || t.name === "source" || t.name === "link") for (const ref of imgs) {
+      const img = ref ? local(ref, page) : null
+      if (img && kb(statSync(img).size) > image.kb) image = { kb: kb(statSync(img).size), file: img.replace(DIST, "") }
+    }
+  }
+  const total = [...assets].reduce((n, f) => n + Bun.gzipSync(readFileSync(f)).length, Bun.gzipSync(html).length)
+  return { kb: kb(total), image }
+}
+
+function qualityChecks(pages: string[]): boolean {
+  const rel = (f: string) => f.replace(DIST, "")
+  const byRule = new Map<string, string[]>()
+  for (const f of pages) for (const [rule, why] of a11yProblems(readFileSync(f, "utf8"))) byRule.set(rule, [...(byRule.get(rule) ?? []), `${rel(f)} (${why})`])
+  let all = true
+  for (const rule of ["<html lang>", "img alt", "tek h1", "başlık sırası", "a adı", "button adı", "form etiketi", "tekrarlanan id"]) {
+    const hits = byRule.get(rule) ?? []
+    all = report(hits.length === 0, `Erişilebilirlik: ${rule}`, `${hits.length} sorun: ${hits.slice(0, 4).join(", ")}`) && all
+  }
+  const pageKb = SITE.budget?.pageKb ?? 150, imageKb = SITE.budget?.imageKb ?? 400
+  const w = pages.map((f) => ({ f: rel(f), ...pageWeight(f) }))
+  const heavy = w.filter((x) => x.kb > pageKb).map((x) => `${x.f} ${x.kb} KB`)
+  all = report(heavy.length === 0, `Sayfa bütçesi: gzip HTML+CSS+JS ≤ ${pageKb} KB (en büyük ${Math.max(0, ...w.map((x) => x.kb))} KB)`, heavy.slice(0, 4).join(", ")) && all
+  const big = w.filter((x) => x.image.kb > imageKb).map((x) => `${x.f}: ${x.image.file} ${x.image.kb} KB`)
+  return report(big.length === 0, `Görsel bütçesi: sayfadaki en büyük yerel görsel ≤ ${imageKb} KB`, [...new Set(big)].slice(0, 4).join(", ")) && all
+}
 
 async function serveAndCheck(checks: Check[]): Promise<boolean> {
   const server = serve()
@@ -55,7 +172,7 @@ async function runChecks(base: string, checks: Check[] = SITE.checks): Promise<b
   return all
 }
 
-function distChecks(): boolean {
+export function distChecks(): boolean {
   let all = true
   const headers = existsSync(join(DIST, "_headers")) ? readFileSync(join(DIST, "_headers"), "utf8") : ""
   const missing = ["frame-ancestors 'none'", "Strict-Transport-Security"].filter((s) => !headers.includes(s))
@@ -68,6 +185,7 @@ function distChecks(): boolean {
   all = report(inline.length === 0, "Inline script yok", [...new Set(inline)].join(", ")) && all
   const styled = pages.filter((f) => /<style[\s>]|\sstyle="/.test(readFileSync(f, "utf8")))
   all = report(styled.length === 0, "Inline stil yok (CSP style-src 'self')", styled.map((f) => f.replace(DIST, "")).join(", ")) && all
+  all = qualityChecks(pages) && all
   // CSP img-src 'self': panel görselleri build'de indirilmiş olmalı, sayfada PB adresi kalmamalı
   if (SITE.externalImages) return all
   const leaked = pages.filter((f) => /<img[^>]+src="https?:\/\//.test(readFileSync(f, "utf8"))).map((f) => f.replace(DIST, ""))
