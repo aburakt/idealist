@@ -1,7 +1,7 @@
 {
   "source": "https://github.com/aburakt/astro-pb-template",
   "ref": "main",
-  "commit": "ddb2947cddc868f01bea0e4432fa7e3e2dd6562c",
+  "commit": "920e54e9356964aaa9fa672a9db5231817428694",
   "files": {
     "core.json": "51896811e5d962adbbbc4361ed03f2fcdc7233208841e3de8baee8b9b4d609b3",
     ".github/workflows/ci.yml": "d09dd0be23c13a7a816118c9e1ad88390991b8a0b5bf0dc8a9e74a6a1f2fe2e9",
@@ -21,7 +21,7 @@
     "site/src/lib/image.ts": "4b11b0f357f33a9f496132af3e534f5cdded3a7ea57471bf8fd1b3f0c51ec9ac",
     "site/src/lib/pb.ts": "7850b1e0ba1e87903e714e07f1c8ba58af0d68f064a0cb159e1195938bd0d36e",
     "site/src/lib/sanitize.ts": "f8f19ac4db956e23729a90db7d7368fc9395aa4b5380275d49b025bbcc5be874",
-    "tests/core.test.ts": "19cab309858ffc876b6506723d35efd05a2d9c16f2bb891dd34c5ea99c579f92",
+    "tests/core.test.ts": "95f0c1e2d4eecd2959e71cd1548f1450a7c1e10d1b06e6ff8681afd4d0401033",
     "tests/harness.test.ts": "d27aca33b5b5b41d8fa54f86e9cdd9c623008ba901e95251cd48c7520deebe4a",
     "tests/hooks.test.ts": "df57a4d5d1fc2ade8834632f783156e04a7b8d1d9f9d1a72d3a8c19e97363f0b",
     "tests/panel.test.ts": "f2ea42ddc9fd6e643c80c54333d2f733a409632575412745230afca3e37df82f"

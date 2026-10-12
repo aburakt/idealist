@@ -53,7 +53,9 @@ describe("şema standardı", () => {
     expect(bad).toEqual([])
   })
   test("published = true kuralı olan koleksiyonda published alanı var", () => {
-    const bad = cols.filter((c) => c.listRule?.includes("published") && !c.fields.some((f) => f.name === "published" && f.type === "bool"))
+    // "summit.published = true" gibi ilişki üzerinden kural kendi alanını gerektirmez
+    const own = /(^|[^.\w])published\s*=\s*true/
+    const bad = cols.filter((c) => own.test(c.listRule ?? "") && !c.fields.some((f) => f.name === "published" && f.type === "bool"))
     expect(bad.map((c) => c.name)).toEqual([])
   })
 })
