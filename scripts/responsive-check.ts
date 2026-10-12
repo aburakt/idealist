@@ -3,7 +3,7 @@ import { readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 
 // Yerel kontrol (Bun.WebView gerekir; CI'da koşmaz): fixture build'indeki her sayfayı birçok genişlikte açar,
-// yatay taşmayı ve ekran dışına çıkan öğeleri ölçer.
+// yatay taşmayı, ekran dışına çıkan öğeleri ve dönen kelimeli başlıklarda ([data-rotate]) düzen kaymasını ölçer.
 const ROOT = join(import.meta.dir, "..")
 const DIST = join(ROOT, "site", "dist")
 const WIDTHS = (process.env.WIDTHS ?? "320,360,390,600,768,1024,1280,1440,1920,2560").split(",").map(Number)
@@ -35,6 +35,24 @@ const OVERFLOW = `(() => {
   return JSON.stringify(res)
 })()`
 
+// [data-rotate]: kelimeleri sırayla değişen başlık (çocuk öğeler .is-active ile ya da data-words ile). Her kelimede
+// h1 boyutu ve yanındaki kartın (.tilt-card) yeri aynı kalmalı.
+const STABILITY = `(() => {
+  const el = document.querySelector('[data-rotate]')
+  if (!el) return JSON.stringify({ skip: true })
+  const h1 = document.querySelector('h1')
+  const card = document.querySelector('.tilt-card')
+  const snap = () => { const a = h1.getBoundingClientRect(); const c = card ? card.getBoundingClientRect() : { left: 0, top: 0 }; return [a.width, a.height, c.left, c.top].map(Math.round).join(',') }
+  const words = el.dataset.words ? JSON.parse(el.dataset.words) : [...el.children].map((c) => c.textContent)
+  const rows = []
+  if (el.children.length > 0) {
+    for (let i = 0; i < el.children.length; i++) { [...el.children].forEach((c, j) => c.classList.toggle('is-active', i === j)); rows.push(snap()) }
+  } else {
+    for (const w of words) { el.textContent = w; rows.push(snap()) }
+  }
+  return JSON.stringify({ rows, stable: new Set(rows).size === 1 })
+})()`
+
 const build = Bun.spawnSync(["bun", "run", "build"], { cwd: ROOT, env: { ...process.env, CONTENT_SOURCE: "fixture" }, stdout: "ignore", stderr: "inherit" })
 if (build.exitCode !== 0) process.exit(1)
 
@@ -61,6 +79,14 @@ for (const w of WIDTHS) {
     if (o.sw > o.vw + 1 || o.bad.length) {
       bad++
       out(`❌ ${w}px ${path}: scrollWidth ${o.sw} > ${o.vw}${o.bad.length ? ` | ${o.bad.join(" | ")}` : ""}`)
+    }
+    if ((await view.evaluate("!!document.querySelector('[data-rotate]')")) === true) {
+      await Bun.sleep(1300) // giriş animasyonu bitsin; yoksa kartın yeri animasyondan oynar
+      const st = JSON.parse((await view.evaluate(STABILITY)) as string) as { stable?: boolean; rows?: string[] }
+      if (!st.stable) {
+        bad++
+        out(`❌ ${w}px ${path}: dönen kelimede düzen kayıyor [genişlik,yükseklik,kart.x,kart.y] ${JSON.stringify(st.rows)}`)
+      }
     }
   }
   view.close?.()

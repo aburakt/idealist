@@ -14,6 +14,7 @@
     "scripts/pb-binary.ts",
     "scripts/pb-harness.ts",
     "scripts/responsive-check.ts",
+    "scripts/site-types.ts",
     "scripts/verify.ts",
     "site/src/components/Photo.astro",
     "site/src/env.d.ts",

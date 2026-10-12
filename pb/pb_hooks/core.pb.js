@@ -24,20 +24,23 @@ onRecordAfterDeleteSuccess((e) => {
 }, ...SITE.CONTENT)
 
 // Panel korumaları (tek kayıt, sabit kayıtlar, kilitli adresler): kurallar site.js RULES'ta, uygulama lib/protect.js'te.
-onRecordCreateRequest((e) => {
-  require(`${__hooks}/lib/protect.js`).beforeCreate(e)
-  e.next()
-}, ...PROTECTED)
+// RULES boşsa kayıt yapılmaz (koleksiyonsuz hook bütün koleksiyonlara bağlanırdı).
+if (PROTECTED.length) {
+  onRecordCreateRequest((e) => {
+    require(`${__hooks}/lib/protect.js`).beforeCreate(e)
+    e.next()
+  }, ...PROTECTED)
 
-onRecordUpdateRequest((e) => {
-  require(`${__hooks}/lib/protect.js`).beforeUpdate(e)
-  e.next()
-}, ...PROTECTED)
+  onRecordUpdateRequest((e) => {
+    require(`${__hooks}/lib/protect.js`).beforeUpdate(e)
+    e.next()
+  }, ...PROTECTED)
 
-onRecordDeleteRequest((e) => {
-  require(`${__hooks}/lib/protect.js`).beforeDelete(e)
-  e.next()
-}, ...PROTECTED)
+  onRecordDeleteRequest((e) => {
+    require(`${__hooks}/lib/protect.js`).beforeDelete(e)
+    e.next()
+  }, ...PROTECTED)
+}
 
 cronAdd(`${SITE.ID}_deploy`, "* * * * *", () => {
   require(`${__hooks}/lib/deploy.js`).flush($app, false)
