@@ -1,3 +1,4 @@
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 type ListResult<T> = { items: T[]; totalPages: number }
 
 /** CONTENT_SOURCE=fixture: PB olmadan örnek veriyle build (yalnız önizleme; açıkça seçilmelidir). */

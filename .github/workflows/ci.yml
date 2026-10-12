@@ -1,3 +1,4 @@
+# ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 name: ci
 
 on: [push, pull_request]
@@ -16,7 +17,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx oxlint
       - run: bun run check
-      - run: bun test tests/harness.test.ts tests/rules.test.ts tests/content.test.ts
+      # hooks testi yavaş (debounce bekler); ayrı işte koşar
+      - run: bun test $(ls tests/*.test.ts | grep -v hooks.test.ts)
 
   verify:
     runs-on: ubuntu-latest

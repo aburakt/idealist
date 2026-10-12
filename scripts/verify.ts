@@ -1,8 +1,11 @@
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { startPb } from "./pb-harness"
+import { SITE_ID, startPb } from "./pb-harness"
 import { seed } from "./seed"
+import { SITE } from "../site.config"
+
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez. Siteye özel sayfa kontrolleri site.config.ts'te.
 
 const ROOT = join(import.meta.dir, "..")
 const DIST = join(ROOT, "site", "dist")
@@ -23,28 +26,12 @@ function walk(dir: string): string[] {
 const htmlOf = (dir: string) => Object.fromEntries(walk(dir).filter((f) => f.endsWith(".html")).map((f) => [f.slice(dir.length), readFileSync(f, "utf8")]))
 /** Görünen metin: etiketler, betikler, önizleme bandı ve boşluk farkları atılır. */
 const visible = (html: string): string =>
-  html.replace(/<(script|style|svg)[\s\S]*?<\/\1>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
+  html.replace(/<(script|style|svg)[\s\S]*?<\/\1>/g, "").replace(/<p data-fixture-banner[\s\S]*?<\/p>/g, "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ").replace(/\s+/g, " ").trim()
 
-type Check = { name: string; path: string; status?: number; has?: string[]; hasNot?: string[] }
-export const CHECKS: Check[] = [
-  { name: "Ana sayfa", path: "/", has: ['<html lang="tr"', "<h1", 'rel="canonical" href="https://www.idealistmuhendislik.com.tr/"', "Mekanik tesisat", "/logo.svg", "tel:+903129055566", "Seçili projeler", "Merkez Ankara", "/faaliyet-alanlari/saglik/", 'hreflang="en"'] },
-  { name: "Hakkımızda", path: "/hakkimizda/", has: ["Kuruluş", "Misyon", "Mikail Sandıkcı", "2004"] },
-  { name: "Projeler", path: "/projeler/", has: ["Ceylanpınar 75 Yataklı Devlet Hastanesi", "Malta City Center", "Tiflis Rehabilitasyon Merkezi", "/projeler/kervansaray/"] },
-  { name: "Faaliyet alanı", path: "/faaliyet-alanlari/yurt-disi/", has: ["Yurt Dışı Projeleri", "Malta City Center", "Sheraton Batum Oteli"], hasNot: ["Merkez Ankara"] },
-  { name: "Proje sayfası: bilgiler ve galeri", path: "/projeler/merkez-ankara/", has: ["Pasifik Çiftay İş Ortaklığı", "1.333.255 m²", "data-gallery-item", "data-viewer", "/_astro/"] },
-  { name: "Proje sayfası: çok görselli", path: "/projeler/ceylanpinar-devlet-hastanesi/", has: ["görsel 19"] },
-  { name: "İletişim", path: "/iletisim/", has: ["info@idealistmuhendislik.com.tr", "905 55 77", "284 08 09", "Kızılırmak", "google.com/maps/embed"] },
-  { name: "İngilizce sayfa", path: "/en/", has: ['<html lang="en"', "Idealist Engineering", "Establishment", "Mechanical and Electrical Engineering", "International Projects"] },
-  { name: "Blog", path: "/blog/", has: ["Mekanik tesisat üzerine yazılar", "/blog/hastanelerde-hvac-tasarimi/", "8 Ekim 2026"] },
-  { name: "Blog yazısı", path: "/blog/sprinkler-yangin-sondurme-sistemleri/", has: ["TS EN 12845", "BlogPosting", "Diğer yazılar", "/_astro/"] },
-  { name: "404 sayfası", path: "/yok-boyle-bir-sayfa/", status: 404, has: ["Sayfa bulunamadı"] },
-  { name: "Sitemap", path: "/sitemap-index.xml" },
-  { name: "Robots", path: "/robots.txt", has: ["Sitemap:"] },
-]
 
 async function runChecks(base: string): Promise<boolean> {
   let all = true
-  for (const c of CHECKS) {
+  for (const c of SITE.checks) {
     const res = await fetch(base + c.path)
     const body = await res.text()
     const want = c.status ?? 200
@@ -70,9 +57,8 @@ function distChecks(): boolean {
   all = report(inline.length === 0, "Inline script yok", [...new Set(inline)].join(", ")) && all
   const styled = pages.filter((f) => /<style[\s>]|\sstyle="/.test(readFileSync(f, "utf8")))
   all = report(styled.length === 0, "Inline stil yok (CSP style-src 'self')", styled.map((f) => f.replace(DIST, "")).join(", ")) && all
-  const redirects = existsSync(join(DIST, "_redirects")) ? readFileSync(join(DIST, "_redirects"), "utf8") : ""
-  all = report(redirects.includes("/projects.html /projeler/ 301") && redirects.includes("/en.html /en/ 301"), "Yönlendirmeler build çıktısında", "_redirects eksik ya da boş") && all
   // CSP img-src 'self': panel görselleri build'de indirilmiş olmalı, sayfada PB adresi kalmamalı
+  if (SITE.externalImages) return all
   const leaked = pages.filter((f) => /<img[^>]+src="https?:\/\//.test(readFileSync(f, "utf8"))).map((f) => f.replace(DIST, ""))
   return report(leaked.length === 0, "Görseller siteden servis edilir (dış adres yok)", leaked.slice(0, 4).join(", ")) && all
 }
@@ -95,13 +81,14 @@ async function main(): Promise<number> {
   const external = process.env.BASE_URL
   if (external) return (await runChecks(external.replace(/\/$/, ""))) ? 0 : 1
 
-  out("— API kuralları (bun test)")
-  const rules = Bun.spawnSync(["bun", "test", "tests/rules.test.ts"], { cwd: ROOT, stdout: "inherit", stderr: "inherit" })
-  if (!report(rules.exitCode === 0, "API kuralları", "tests/rules.test.ts kırmızı")) return 1
+  out("— Standart ve API kuralları (bun test)")
+  const suites = ["tests/core.test.ts", "tests/rules.test.ts"].filter((f) => existsSync(join(ROOT, f)))
+  const rules = Bun.spawnSync(["bun", "test", ...suites], { cwd: ROOT, stdout: "inherit", stderr: "inherit" })
+  if (!report(rules.exitCode === 0, "Standart ve API kuralları", `${suites.join(", ")} kırmızı`)) return 1
 
   out("— Fixture build (referans)")
   if (!report(build({ CONTENT_SOURCE: "fixture" }).exitCode === 0, "Fixture build", "çıkış kodu ≠ 0")) return 1
-  const fixtureDir = mkdtempSync(join(tmpdir(), "idealist-fixture-"))
+  const fixtureDir = mkdtempSync(join(tmpdir(), `${SITE_ID}-fixture-`))
   cpSync(DIST, fixtureDir, { recursive: true })
 
   out("— PB build (geçici PB'ye karşı, gerçek içerikle)")

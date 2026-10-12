@@ -1,0 +1,29 @@
+{
+  "source": "https://github.com/aburakt/astro-pb-template",
+  "ref": "main",
+  "commit": "ddb2947cddc868f01bea0e4432fa7e3e2dd6562c",
+  "files": {
+    "core.json": "51896811e5d962adbbbc4361ed03f2fcdc7233208841e3de8baee8b9b4d609b3",
+    ".github/workflows/ci.yml": "d09dd0be23c13a7a816118c9e1ad88390991b8a0b5bf0dc8a9e74a6a1f2fe2e9",
+    "PB_VERSION": "b5ef20402575ae74e37726230e19cd5f5f79d3a9d5bfa86a398026909c108eb7",
+    "pb/pb_hooks/core.pb.js": "bb3eb40c2572fd56f70ca32769ac9789476d49959310e9a78f0421365f90919b",
+    "pb/pb_hooks/panel-tr.pb.js": "70049449bbcb4b69ede33291fea87cc9e152dc2484ec82fbac2d4c3bf4ce475f",
+    "pb/pb_hooks/panel/tr.js": "2125eaaa99c34f7127dff0dcfbb7f1b2d98c792b83747a4ec9bc4d935e835654",
+    "pb/pb_hooks/lib/deploy.js": "da1926700c486e392f30e3c1454f6dbccb8fae8fd1a57a256653cff954dd23e8",
+    "pb/pb_hooks/lib/protect.js": "f95dd1616d3968fc8c69111819ca5499106eb3f7b618a913e74306c0c5c63d45",
+    "scripts/core-sync.ts": "8d6575341ceda7f0984d9deb9237d9d1e77ed5da565bcf18c6377fa6fcddf349",
+    "scripts/pb-binary.ts": "cfbcb980b781f1d8c5b4fbd4241a1b4f6a78b046381497196339e901aa361b74",
+    "scripts/pb-harness.ts": "46c6f8add819a91fc154c39cc3dac5f1a2b8ee3fa8543aa5e88c2d3f1050ab04",
+    "scripts/responsive-check.ts": "5f9c02c3d930616268836b53fb11d916356b3221cb781c463a52c68b004bf040",
+    "scripts/verify.ts": "18110e4297c9a14f6623b5f3dd58332f9f0a99d71fd852e363f85dd7325dcffc",
+    "site/src/components/Photo.astro": "a97052a9f967138083b52e78d56b28bce35e368ebbc83adf06201eb20cc8685e",
+    "site/src/env.d.ts": "8a11b1adc0596688d3088c86a86bb7fc3afce916e1d6cb96892db1f730c9d855",
+    "site/src/lib/image.ts": "4b11b0f357f33a9f496132af3e534f5cdded3a7ea57471bf8fd1b3f0c51ec9ac",
+    "site/src/lib/pb.ts": "7850b1e0ba1e87903e714e07f1c8ba58af0d68f064a0cb159e1195938bd0d36e",
+    "site/src/lib/sanitize.ts": "f8f19ac4db956e23729a90db7d7368fc9395aa4b5380275d49b025bbcc5be874",
+    "tests/core.test.ts": "19cab309858ffc876b6506723d35efd05a2d9c16f2bb891dd34c5ea99c579f92",
+    "tests/harness.test.ts": "d27aca33b5b5b41d8fa54f86e9cdd9c623008ba901e95251cd48c7520deebe4a",
+    "tests/hooks.test.ts": "df57a4d5d1fc2ade8834632f783156e04a7b8d1d9f9d1a72d3a8c19e97363f0b",
+    "tests/panel.test.ts": "f2ea42ddc9fd6e643c80c54333d2f733a409632575412745230afca3e37df82f"
+  }
+}

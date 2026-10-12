@@ -1,5 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
+
 // Yönetim panelini Türkçe gösterir. Panel (PocketBase 0.37+) açılışta /_/extensions.js dosyasını yükler; resmi kayıt yolu
 // yalnız Go'da olduğu için isteği burada yakalayıp panel/tr.js'i site etiketleriyle (panel/labels.json) birlikte döndürürüz.
 // Dosya bozulur ya da PB bu adresi değiştirirse panel İngilizce çalışmaya devam eder.

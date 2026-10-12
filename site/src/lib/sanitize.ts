@@ -1,3 +1,4 @@
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 /**
  * Panel editöründen gelen HTML'i CSP'ye uygun hâle getirir: betik, stil, gömülü çerçeve ve olay öznitelikleri atılır;
  * `style`/`class` silinir (CSP style-src 'self'). Kaynak panel (yalnız yöneticiler yazar), yine de dışarıdan

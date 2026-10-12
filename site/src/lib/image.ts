@@ -1,3 +1,4 @@
+// ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 import { getImage, inferRemoteSize } from "astro:assets"
 import type { Img } from "./types"
 
