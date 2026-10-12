@@ -14,6 +14,7 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - Şema yalnızca `pb/pb_migrations/` ile; mevcut migration dosyası düzenlenmez, ek dosya eklenir.
 - Her koleksiyonun beş API kuralı açıkça yazılır. Public okuma `published = true` ile sınırlı (settings hariç: tek kayıt, herkese açık).
 - Her alanda Türkçe `help`, her koleksiyonda `presentable` alan (test ölçer). Panel korumaları `pb/pb_hooks/lib/protect.js`.
+- Panel Türkçedir: `pb/pb_hooks/panel-tr.pb.js`, panelin yüklediği `/_/extensions.js` isteğine `panel/tr.js` (sözlük) ve `panel/labels.json` (koleksiyon/alan etiketleri) ile cevap verir. Yeni koleksiyon ya da alan eklenince `labels.json` içine Türkçe etiketi yazılır (test ölçer). `tr.js` bütün sitelerde aynıdır; sitede elle değiştirilmez.
 - Build'e superuser token'ı verilmez. PB yoksa build kırılır (yalnız `CONTENT_SOURCE=fixture` istisna).
 - CSP `style-src 'self'`, `img-src 'self'`: hiçbir yerde `style=` ya da inline script yok; panel görselleri build'de indirilir.
 - Tasarım dili kurumsal mühendislik müşavirliği (Arup, Max Fordham, Atelier Ten örnek alındı; araştırma `docs/tasarim-arastirma.md`): beyaz/kâğıt zemin, mürekkep siyahı metin, renk fotoğraflardan gelir, kırmızı (#e3000f) yalnız küçük vurgularda. Yazı IBM Plex Sans, sayı ve künye IBM Plex Mono. Parçacık/akış animasyonu, cam efektli buton, sayaç, slider, kırmızı CTA bandı yok. Tek sabit tema, koyu moda otomatik geçiş yok.
