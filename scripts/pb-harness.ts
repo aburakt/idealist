@@ -12,6 +12,8 @@ export type Pb = {
   url: string
   dir: string
   token: string
+  /** ajans (test) superuser e-postası */
+  email: string
   api(path: string, init?: RequestInit): Promise<Response>
   admin(path: string, init?: RequestInit): Promise<Response>
   stop(): Promise<void>
@@ -50,7 +52,8 @@ export async function startPb(env: Record<string, string> = {}): Promise<Pb> {
   const port = freePort()
   const url = `http://127.0.0.1:${port}`
   const proc = Bun.spawn([bin, "serve", `--http=127.0.0.1:${port}`, "--automigrate=false", ...common], {
-    env: { ...process.env, ...env },
+    // Test hesabı ajans hesabıdır (lib/guard.js); kısıtlı müşteri hesabı testlerde ayrıca açılır.
+    env: { ...process.env, PB_AGENCY_EMAILS: email, ...env },
     // PB_DEBUG=1: PB çıktısını göster (hook/migration hatası ayıklamak için)
     stdout: process.env.PB_DEBUG ? "inherit" : "pipe",
     stderr: process.env.PB_DEBUG ? "inherit" : "pipe",
@@ -80,6 +83,7 @@ export async function startPb(env: Record<string, string> = {}): Promise<Pb> {
     url,
     dir,
     token,
+    email,
     api: (path, init) => fetch(`${url}${path}`, withJson(init)),
     admin: (path, init) => fetch(`${url}${path}`, withJson(init, token)),
     async stop() {

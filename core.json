@@ -1,13 +1,15 @@
 {
   "files": [
-    "core.json",
     ".github/workflows/ci.yml",
     "PB_VERSION",
+    "core.json",
     "pb/pb_hooks/core.pb.js",
+    "pb/pb_hooks/guard.pb.js",
+    "pb/pb_hooks/lib/deploy.js",
+    "pb/pb_hooks/lib/guard.js",
+    "pb/pb_hooks/lib/protect.js",
     "pb/pb_hooks/panel-tr.pb.js",
     "pb/pb_hooks/panel/tr.js",
-    "pb/pb_hooks/lib/deploy.js",
-    "pb/pb_hooks/lib/protect.js",
     "scripts/core-sync.ts",
     "scripts/pb-binary.ts",
     "scripts/pb-harness.ts",
@@ -19,6 +21,7 @@
     "site/src/lib/pb.ts",
     "site/src/lib/sanitize.ts",
     "tests/core.test.ts",
+    "tests/guard.test.ts",
     "tests/harness.test.ts",
     "tests/hooks.test.ts",
     "tests/panel.test.ts"
