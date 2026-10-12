@@ -21,6 +21,6 @@ const list = projectsIn(site, area.slug)
   <section class="wrap py-14">
     {list.length === 0
       ? <p class="text-lg text-ink-soft">Bu alanda henüz yayında proje yok. <a href="/projeler/" class="link">Tüm projeler</a></p>
-      : <div class="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{list.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}</div>}
+      : <div class="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">{list.map((p, i) => <ProjectCard project={p} eager={i < 3} level={2} />)}</div>}
   </section>
 </Base>

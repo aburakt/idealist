@@ -3,13 +3,15 @@ import { formatDate } from "../lib/format"
 import type { Post } from "../lib/types"
 
 // Blog satırı: tarih, konu, başlık, özet. Görselsiz liste (yayın arşivi gibi).
-interface Props { post: Post }
-const { post: p } = Astro.props
+// level: başlık seviyesi; liste doğrudan sayfa h1'inin altındaysa 2, bir h2 bölümünün içindeyse 3 (görünüm aynı)
+interface Props { post: Post; level?: 2 | 3 }
+const { post: p, level = 3 } = Astro.props
+const Heading = level === 2 ? "h2" : "h3"
 ---
 <a href={`/blog/${p.slug}/`} class="group grid gap-2 border-t border-line py-7 text-ink no-underline md:grid-cols-[12rem_1fr] md:gap-10">
   <p class="mono text-xs uppercase tracking-[0.06em] text-ink-soft"><time datetime={p.date}>{formatDate(p.date)}</time>{p.category && <span class="mt-1 block text-ink">{p.category}</span>}</p>
   <div>
-    <h3 class="text-xl font-medium decoration-brand underline-offset-4 group-hover:underline">{p.title}</h3>
+    <Heading class="card-title text-xl font-medium decoration-brand underline-offset-4 group-hover:underline">{p.title}</Heading>
     {p.excerpt && <p class="mt-2 max-w-[70ch] text-ink-soft">{p.excerpt}</p>}
   </div>
 </a>

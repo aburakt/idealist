@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css"
 import Footer from "../components/Footer.astro"
+import Geo from "../components/Geo.astro"
 import Header from "../components/Header.astro"
 import WhatsApp from "../components/WhatsApp.astro"
 import { loadSite } from "../lib/content"
@@ -40,6 +41,7 @@ const noindex = fixture || (process.env.NOINDEX ?? import.meta.env.NOINDEX) === 
     <meta property="og:url" content={canonical} />
     {ogImage && <meta property="og:image" content={ogImage} />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <Geo path={path} />
   </head>
   <body class="flex min-h-dvh flex-col">
     <Header lang={lang} />

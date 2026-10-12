@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[2]
 MEDIA = ROOT / "site" / "src" / "assets" / "media"
 OUT = ROOT / "site" / "src" / "data" / "content.json"
 MAX_W = 1600
+# dikey görsel: sayfada sütun genişliğinde gösterilir; 2000 px'ten uzunu yalnız dosyayı büyütür (görsel bütçesi 400 KB)
+MAX_H = 2000
 
 AREAS = [
     ("karma-kullanim", "Karma Kullanım", "Mixed-Use Buildings", "mixed"),
@@ -166,8 +168,9 @@ def to_webp(rel, name):
     src = SRC / rel
     im = Image.open(src)
     im = im.convert("RGB")
-    if im.width > MAX_W:
-        im = im.resize((MAX_W, round(im.height * MAX_W / im.width)), Image.LANCZOS)
+    scale = min(MAX_W / im.width, MAX_H / im.height)
+    if scale < 1:
+        im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
     im.save(MEDIA / name, "WEBP", quality=80, method=6)
     return name
 

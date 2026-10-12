@@ -54,6 +54,8 @@
   .label { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-soft); }
   .label-num { color: var(--color-brand); margin-right: 0.75rem; }
   .mono { font-family: var(--font-mono); font-feature-settings: "zero" 0; }
+  /* kart başlığı (ProjectCard, PostCard): seviyesi h2 ya da h3 olabilir, görünümü hep h3'ünki */
+  .card-title { letter-spacing: -0.005em; line-height: 1.3; }
 
   /* metin bağlantısı: çizgili, oklu */
   .link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--color-line); transition: text-decoration-color 0.15s, color 0.15s; }

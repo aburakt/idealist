@@ -40,14 +40,14 @@ module.exports = {
       } else {
         // başarısızsa bir sonraki dakikada tekrar denensin
         store.set(KEY, Date.now() - quietMs())
-        app.logger().error("Cloudflare Pages deploy hook hatası", "status", res.statusCode, "body", toString(res.body))
+        require(`${__hooks}/lib/report.js`).error(app, "Cloudflare Pages deploy hook hatası", { status: res.statusCode, body: toString(res.body).slice(0, 500) })
       }
       return { ok, status: res.statusCode }
     } catch (err) {
       store.set(KEY, Date.now() - quietMs())
       // deploy bağlantısı gizli anahtardır: hata metninden çıkar
       const msg = String(err).split(url).join("<deploy-hook>")
-      app.logger().error("Cloudflare Pages deploy hook çağrılamadı", "error", msg)
+      require(`${__hooks}/lib/report.js`).error(app, "Cloudflare Pages deploy hook çağrılamadı", { error: msg })
       return { ok: false, error: msg }
     }
   },

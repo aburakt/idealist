@@ -11,6 +11,6 @@ const { projects, settings } = await loadSite()
   <PageHeader label="Projeler" title="Projelerimiz" intro="Mekanik tesisat tasarımını ve müşavirliğini üstlendiğimiz projelerden bir seçki. Faaliyet alanına göre süzebilirsiniz." />
   <AreaNav />
   <section class="wrap grid gap-x-8 gap-y-14 py-14 sm:grid-cols-2 lg:grid-cols-3">
-    {projects.map((p, i) => <ProjectCard project={p} eager={i < 3} />)}
+    {projects.map((p, i) => <ProjectCard project={p} eager={i < 3} level={2} />)}
   </section>
 </Base>

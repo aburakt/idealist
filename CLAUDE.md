@@ -6,7 +6,7 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - `bun install` · `bun run check` (astro check) · `bun run build` · `bun test` · `bun run verify` · `bun run core:sync [etiket]`
 - `bun run verify`: kurallar testi + fixture build + PB build (gerçek içerik tohumlanır) + **PB/fixture paritesi** (aynı sayfalar, aynı metin) + sayfa/başlık/CSP kontrolleri
 - `CONTENT_SOURCE=fixture bun run build`: PB olmadan, `site/src/data/content.json` ile önizleme build'i (noindex)
-- `bun run verify:responsive`: her sayfa birçok genişlikte taşma kontrolü (yerel, Bun.WebView)
+- `bun run verify:responsive`: her sayfa birçok genişlikte taşma kontrolü (Bun.WebView; yerelde ve CI'da)
 - `scripts/legacy/extract.py`: eski statik siteden içerik ve görsel çıkarıcı (elle düzeltilmiş proje tablosu); bir kez çalıştı, çıktısı commit'li
 - `scripts/seed-remote.ts`: boş canlı PB'ye içeriği yükler (SSH tüneliyle)
 
@@ -15,6 +15,8 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - Template core'u değişince `.github/workflows/core-sync.yml` (core) haftalık `core-sync` dalından PR açar; repo sırrı `CORE_SYNC_TOKEN` gerekir. Sunucuya dağıtım elle yapılır.
 - Müşteri kısıtlı superuser'dır (`pb_hooks/lib/guard.js`, core): `PB_AGENCY_EMAILS`'te (sunucu `.env`) olmayan superuser yalnız içerik kayıtlarını ve kendi şifresini düzenler; şema, ayar, yedek ve hesap yönetimi ajansa açık.
 - Siteye özel ayarlar: `pb/pb_hooks/site.js` (ID, CONTENT, panel korumaları RULES), `site.config.ts` (verify sayfa kontrolleri, hook testi kaydı), `pb/pb_hooks/panel/labels.json`.
+- GEO/WebMCP (core: llms.txt, llms-full.txt, robots.txt, sayfaların `index.md` eşi, `/webmcp.json`): siteye ait tanım `site/src/lib/geo.ts` (bölümler Hakkımızda, Hizmetler, Faaliyet Alanları, Projeler, Blog, `/en/`; WhatsApp `kind: "whatsapp"`). robots.txt core üretir; `public/robots.txt` yok.
+- Türkçe büyük/küçük harf `site/src/lib/tr.ts` (core): `toLowerCase`/`toUpperCase` yerine `lower`/`upper`.
 
 ## Kurallar
 - Şema yalnızca `pb/pb_migrations/` ile; mevcut migration dosyası düzenlenmez, ek dosya eklenir.
@@ -28,4 +30,6 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - Proje adresi `/projeler/<slug>/`, faaliyet alanı adresi `/faaliyet-alanlari/<slug>/`, blog `/blog/<slug>/`; slug'lar kayıttan sonra kilitlidir.
 - Logo: `site/public/logo.svg` ve koyu zemin varyantı `logo-light.svg` (gri → beyaz) `scripts/legacy/logo.py` ile üretilir: eski PNG'den ölçülmüş temiz geometri. Şekil değiştirilmez, elle düzenlenmez; `<Logo tone="light">` koyu zeminde.
 - Sırlar Infisical'da; repoda yalnızca `.env.example`. `_yedek/` repoya girmez.
+- Başlık sırası verify'da ölçülür: sayfa h1'inin hemen altındaki kart listesi `level={2}` (ProjectCard, PostCard), bir h2 bölümünün içindeki kartlar h3; "diğer projeler/yazılar" etiketi h2.
+- Dikey proje görselleri kaynakta en çok 1600×2000 px (`scripts/legacy/extract.py` MAX_W/MAX_H), görsel bütçesi 400 KB.
 - Eski adres yönlendirmeleri `site/public/_redirects` (test ölçer).

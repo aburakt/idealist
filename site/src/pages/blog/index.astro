@@ -11,6 +11,6 @@ const { posts, settings } = await loadSite()
   <section class="wrap py-12 md:py-16">
     {posts.length === 0
       ? <p class="text-lg text-ink-soft">Henüz yayında yazı yok.</p>
-      : <div class="border-b border-line">{posts.map((p) => <PostCard post={p} />)}</div>}
+      : <div class="border-b border-line">{posts.map((p) => <PostCard post={p} level={2} />)}</div>}
   </section>
 </Base>

@@ -1,0 +1,13 @@
+{
+  "collections": {
+    "audit_log": "Değişiklik Kaydı"
+  },
+  "fields": {
+    "audit_log.actor": "Kim",
+    "audit_log.action": "İşlem",
+    "audit_log.collection_name": "Bölüm",
+    "audit_log.record_id": "Kayıt no",
+    "audit_log.title": "Kayıt",
+    "audit_log.fields": "Değişen alanlar"
+  }
+}

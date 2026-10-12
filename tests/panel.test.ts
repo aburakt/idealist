@@ -28,7 +28,9 @@ describe("Türkçe panel", () => {
   })
 
   test("her koleksiyonun ve görünen her alanın Türkçe etiketi var", async () => {
-    const labels = (await Bun.file(join(HOOKS, "panel", "labels.json")).json()) as Labels
+    const site = (await Bun.file(join(HOOKS, "panel", "labels.json")).json()) as Labels
+    const core = (await Bun.file(join(HOOKS, "panel", "core-labels.json")).json()) as Labels
+    const labels: Labels = { collections: { ...core.collections, ...site.collections }, fields: { ...core.fields, ...site.fields } }
     const tr = await Bun.file(join(HOOKS, "panel", "tr.js")).text()
     const block = tr.slice(tr.indexOf("const COMMON_FIELDS = {"), tr.indexOf("\n}", tr.indexOf("const COMMON_FIELDS = {")))
     const common = new Set([...block.matchAll(/\b(\w+): "/g)].map((m) => m[1]))

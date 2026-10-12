@@ -17,4 +17,6 @@ export type SiteConfig = {
    */
   testSeed?: (pb: Pb) => Promise<void>
   testChecks?: Check[]
+  /** Performans bütçesi (verify): sayfa başına gzip'li HTML + CSS + JS (varsayılan 150 KB), en büyük yerel görsel (varsayılan 400 KB). */
+  budget?: { pageKb?: number; imageKb?: number }
 }
