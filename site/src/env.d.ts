@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_SITE_URL?: string
   readonly NOINDEX?: string
   readonly CONTENT_SOURCE?: string
+  readonly PUBLIC_GLITCHTIP_DSN?: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

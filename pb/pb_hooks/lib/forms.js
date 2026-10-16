@@ -11,6 +11,8 @@
 //   email                            bildirim e-postasında Reply-To olur
 //   notes vb. (FORM_OPTIONS.staffFields)  yalnız panelden yazılır; ziyaretçinin gönderdiği değer silinir
 // Bildirim alıcısı: settings kaydında form_recipient alanı varsa ve doluysa o, yoksa sunucu .env FORM_NOTIFY_TO.
+// Çok dilli sitede FORM_OPTIONS.recipientBy = { settings: "lang", record: "source_lang" }: önce başvurunun dilindeki
+// settings kaydının adresi, o boşsa herhangi bir dolu kayıt, o da yoksa FORM_NOTIFY_TO.
 
 const DEFAULTS = {
   // KVKK: bu kadar günden eski başvurular her gece silinir
@@ -19,6 +21,8 @@ const DEFAULTS = {
   honeypot: "website",
   // Yalnız panelden yazılan alanlar (ziyaretçinin gönderdiği değer yok sayılır)
   staffFields: ["notes"],
+  // Alıcıyı başvurudaki bir alana göre seçmek için: { settings: "<settings alanı>", record: "<başvuru alanı>" }
+  recipientBy: null,
 }
 
 const CONSENT_MSG = "Formu gönderebilmek için kişisel verilerin işlenmesine ilişkin aydınlatma metnini onaylamanız gerekir."
@@ -64,16 +68,27 @@ function display(value) {
   return String(value)
 }
 
-function recipient(app) {
-  let to = $os.getenv("FORM_NOTIFY_TO") || ""
+function recipient(app, record, by) {
+  const fallback = $os.getenv("FORM_NOTIFY_TO") || ""
+  let settings
   try {
-    const settings = app.findCollectionByNameOrId("settings")
-    if (hasField(settings, "form_recipient")) {
-      const rec = app.findFirstRecordByFilter("settings", "form_recipient != ''")
-      to = rec.getString("form_recipient") || to
+    settings = app.findCollectionByNameOrId("settings")
+  } catch {
+    return fallback.trim()
+  }
+  if (!hasField(settings, "form_recipient")) return fallback.trim()
+  const find = (filter, params) => {
+    try {
+      return app.findFirstRecordByFilter("settings", filter, params).getString("form_recipient")
+    } catch {
+      return "" // eşleşen dolu kayıt yok
     }
-  } catch { /* settings yok ya da alan boş */ }
-  return to.trim()
+  }
+  let to = ""
+  if (by && hasField(settings, by.settings) && hasField(record.collection(), by.record)) {
+    to = find(`form_recipient != '' && ${by.settings} = {:v}`, { v: record.getString(by.record) })
+  }
+  return (to || find("form_recipient != ''") || fallback).trim()
 }
 
 module.exports = {
@@ -102,10 +117,10 @@ module.exports = {
   notify(app, record) {
     try {
       if (record.getString("status") === "spam") return
-      const to = recipient(app)
+      const opts = options()
+      const to = recipient(app, record, opts.recipientBy)
       if (!to) return
 
-      const opts = options()
       const col = record.collection()
       const names = labels()
       const skip = SKIP.concat(opts.staffFields, [opts.honeypot])
