@@ -4,9 +4,11 @@
 // PB adresi siteden siteye (ve verify'da her çalıştırmada) değiştiği için _headers'a elle yazılmaz:
 // build bitince PB_URL'nin kökeni dist/_headers içindeki connect-src'ye eklenir. Yalnız site.js FORMS doluysa
 // ve PB modunda (CONTENT_SOURCE=fixture değil, PB_URL tanımlı) yapılır; önizlemede form kapalıdır.
+// Tarayıcı hata takibi (ErrorTracking.astro) açıksa GlitchTip kökeni de aynı yolla eklenir.
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import type { AstroIntegration } from "astro"
+import { GLITCHTIP_DSN } from "../src/lib/monitoring"
 
 const SITE_JS = fileURLToPath(new URL("../../pb/pb_hooks/site.js", import.meta.url))
 
@@ -30,21 +32,23 @@ export default function pbCsp(): AstroIntegration {
       "astro:build:done": ({ dir, logger }) => {
         const pbUrl = process.env.PB_URL
         if (process.env.CONTENT_SOURCE === "fixture" || !pbUrl) return
-        let forms: string[] = []
+        const origins: [string, string][] = []
         try {
-          forms = siteForms()
+          if (siteForms().length) origins.push([new URL(pbUrl).origin, "form gönderimi"])
         } catch (err) {
-          logger.warn(`${SITE_JS} okunamadı, connect-src değişmedi: ${String(err)}`)
+          logger.warn(`${SITE_JS} okunamadı, form için connect-src değişmedi: ${String(err)}`)
         }
-        if (!forms.length) return
+        const dsn = process.env.PUBLIC_GLITCHTIP_DSN ?? GLITCHTIP_DSN
+        if (dsn) origins.push([new URL(dsn).origin, "hata takibi"])
         const file = fileURLToPath(new URL("_headers", dir))
-        if (!existsSync(file)) return
-        const origin = new URL(pbUrl).origin
-        const before = readFileSync(file, "utf8")
-        const after = allowConnect(before, origin)
-        if (after === before) return
-        writeFileSync(file, after)
-        logger.info(`connect-src: ${origin} (form gönderimi)`)
+        if (!origins.length || !existsSync(file)) return
+        let headers = readFileSync(file, "utf8")
+        for (const [origin, why] of origins) {
+          const next = allowConnect(headers, origin)
+          if (next !== headers) logger.info(`connect-src: ${origin} (${why})`)
+          headers = next
+        }
+        writeFileSync(file, headers)
       },
     },
   }
