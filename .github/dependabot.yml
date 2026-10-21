@@ -9,6 +9,10 @@ updates:
       day: monday
       timezone: Europe/Istanbul
     open-pull-requests-limit: 5
+    # astro check TypeScript 7'yi desteklemiyor ("install TypeScript 6 instead"); destek gelince kaldır.
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
     groups:
       bun-minor-patch:
         update-types: [minor, patch]

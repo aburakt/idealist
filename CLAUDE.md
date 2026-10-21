@@ -16,6 +16,7 @@ idealistmuhendislik.com.tr (İdealist Mühendislik, mekanik tesisat tasarım ve 
 - Müşteri kısıtlı superuser'dır (`pb_hooks/lib/guard.js`, core): `PB_AGENCY_EMAILS`'te (sunucu `.env`) olmayan superuser yalnız içerik kayıtlarını ve kendi şifresini düzenler; şema, ayar, yedek ve hesap yönetimi ajansa açık.
 - Siteye özel ayarlar: `pb/pb_hooks/site.js` (ID, CONTENT, panel korumaları RULES), `site.config.ts` (verify sayfa kontrolleri, hook testi kaydı), `pb/pb_hooks/panel/labels.json`.
 - GEO/WebMCP (core: llms.txt, llms-full.txt, robots.txt, sayfaların `index.md` eşi, `/webmcp.json`): siteye ait tanım `site/src/lib/geo.ts` (bölümler Hakkımızda, Hizmetler, Faaliyet Alanları, Projeler, Blog, `/en/`; WhatsApp `kind: "whatsapp"`). robots.txt core üretir; `public/robots.txt` yok.
+- Marka (core): mail şablonları ve panel logosu `site.js` `BRAND`'den; `site/public/logo.svg` varsa build `/brand/logo-mail.png` üretir.
 - Türkçe büyük/küçük harf `site/src/lib/tr.ts` (core): `toLowerCase`/`toUpperCase` yerine `lower`/`upper`.
 
 ## Kurallar
