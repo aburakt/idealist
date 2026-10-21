@@ -1,18 +1,20 @@
 // ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 //
 // Ziyaretçi formları (site.js FORMS, pb_hooks/forms.pb.js): her form kutusu için spam tuzağı, KVKK onayı,
-// personel alanları, yayın tetiklememe, ziyaretçinin okuyamaması, SMTP'siz gönderim ve saklama süresi.
+// personel alanları, yayın tetiklememe, ziyaretçinin okuyamaması, SMTP'siz gönderim, saklama süresi ve
+// bildirim e-postasının markalı düzeni (lib/mail.js, site.js BRAND).
 // FORMS boşsa testler atlanır. Örnek gönderim şemadan üretilir (zorunlu alanlar); üretilemeyen alan varsa
 // site.config.ts'ten `export const formSamples = { <koleksiyon>: { alan: değer } }` ile verilir.
 import { Database } from "bun:sqlite"
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
 import { join } from "node:path"
 import { SITE_ID, startPb, type Pb } from "../scripts/pb-harness"
+import { htmlPart, startSmtpSink } from "../scripts/smtp-sink"
 import * as siteConfig from "../site.config"
 
 const ROOT = join(import.meta.dir, "..")
 type FormOptions = { retentionDays?: number; honeypot?: string; staffFields?: string[] }
-const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as { FORMS?: string[]; FORM_OPTIONS?: FormOptions }
+const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as { FORMS?: string[]; FORM_OPTIONS?: FormOptions; BRAND?: { name?: string } }
 const FORMS = site.FORMS ?? []
 const OPTS = { retentionDays: 365, honeypot: "website", staffFields: ["notes"], ...site.FORM_OPTIONS }
 const overrides = ((siteConfig as { formSamples?: Record<string, Record<string, unknown>> }).formSamples) ?? {}
@@ -78,9 +80,11 @@ beforeAll(async () => {
   rateLimits.rules = rateLimits.rules.filter((r) => !FORMS.some((n) => r.label.startsWith(`${n}:`)))
   expect((await pb.admin("/api/settings", { method: "PATCH", body: JSON.stringify({ rateLimits }) })).status).toBe(200)
 }, 300_000)
+const smtp = startSmtpSink()
 afterAll(async () => {
   await pb?.stop()
   hookServer.stop(true)
+  smtp.stop()
 })
 
 describe.skipIf(!FORMS.length)("ziyaretçi formları (FORMS)", () => {
@@ -154,6 +158,25 @@ describe.skipIf(!FORMS.length)("ziyaretçi formları (FORMS)", () => {
       expect((await adminGet(name, newId)).status).toBe(200)
     }, 30_000)
   }
+
+  test("bildirim e-postası markalı düzende: alanlar, site adı, panel bağlantısı", async () => {
+    const name = FORMS[0]!
+    const settings = { meta: { appURL: "https://cms.example.test", senderAddress: "noreply@example.test" }, smtp: { enabled: true, host: "127.0.0.1", port: smtp.port, tls: false } }
+    expect((await pb.admin("/api/settings", { method: "PATCH", body: JSON.stringify(settings) })).status).toBe(200)
+    const res = await submit(name, has(name, "name") ? { name: "Ayşe <b>Yılmaz</b>" } : {})
+    expect(res.status).toBe(200)
+    const id = ((await res.json()) as Rec).id
+    for (let i = 0; i < 40 && !smtp.messages.length; i++) await Bun.sleep(250)
+    const html = htmlPart(smtp.messages.at(-1) ?? "")
+    expect(html).toContain("max-width:560px")
+    expect(html).toContain("Yeni form gönderimi")
+    if (site.BRAND?.name) expect(html).toContain(site.BRAND.name.replace(/&/g, "&amp;"))
+    expect(html).toContain(`https://cms.example.test/_/#/collections?collection=${name}&amp;record=${id}`)
+    if (has(name, "name")) {
+      expect(html).toContain("Ayşe &lt;b&gt;Yılmaz&lt;/b&gt;")
+      expect(html).not.toContain("<b>Yılmaz")
+    }
+  }, 30_000)
 
   test("form gönderimi siteyi yeniden yayınlatmaz", async () => {
     // yayın cron'u her dakikanın başında çalışır: son gönderimden sonra bir tur geçmesini bekle

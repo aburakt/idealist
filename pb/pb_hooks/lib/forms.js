@@ -10,6 +10,7 @@
 //   kvkk_consent (bool)              varsa ziyaretçi işaretlemeden gönderemez (400)
 //   email                            bildirim e-postasında Reply-To olur
 //   notes vb. (FORM_OPTIONS.staffFields)  yalnız panelden yazılır; ziyaretçinin gönderdiği değer silinir
+// Bildirim e-postası markalı düzende (lib/mail.js, site.js BRAND).
 // Bildirim alıcısı: settings kaydında form_recipient alanı varsa ve doluysa o, yoksa sunucu .env FORM_NOTIFY_TO.
 // Çok dilli sitede FORM_OPTIONS.recipientBy = { settings: "lang", record: "source_lang" }: önce başvurunun dilindeki
 // settings kaydının adresi, o boşsa herhangi bir dolu kayıt, o da yoksa FORM_NOTIFY_TO.
@@ -131,11 +132,14 @@ module.exports = {
         const value = display(record.get(name))
         if (!value) continue
         const label = names.fields[`${col.name}.${name}`] || names.fields[name] || name
-        rows += `<tr><th align="left" valign="top">${esc(label)}</th><td>${esc(value).replace(/\r?\n/g, "<br>")}</td></tr>`
+        rows += `<tr><th align="left" valign="top" style="padding:10px 12px 10px 0;border-top:1px solid #e5e5e5;font-size:14px;line-height:22px;font-weight:600;width:34%;">${esc(label)}</th>`
+          + `<td valign="top" style="padding:10px 0;border-top:1px solid #e5e5e5;font-size:15px;line-height:22px;">${esc(value).replace(/\r?\n/g, "<br>")}</td></tr>`
       }
 
       const title = names.collections[col.name] || col.name
       const meta = app.settings().meta
+      const base = String(meta.appURL || "").replace(/\/+$/, "")
+      const panelUrl = /^https?:\/\//.test(base) ? `${base}/_/#/collections?collection=${encodeURIComponent(col.name)}&record=${encodeURIComponent(record.id)}` : ""
       const headers = {}
       const replyTo = hasField(col, "email") ? record.getString("email") : ""
       if (replyTo) headers["Reply-To"] = replyTo
@@ -146,9 +150,14 @@ module.exports = {
         from: { address: meta.senderAddress, name: meta.senderName },
         to: [{ address: to }],
         subject: `[Web] ${title}: ${who}`,
-        html: `<p>Web sitesinden yeni bir form gönderimi geldi (${esc(title)}).</p>`
-          + `<table cellpadding="4">${rows}</table>`
-          + `<p>Panelde: ${esc(col.name)} / ${esc(record.id)}</p>`,
+        // markalı düzen (lib/mail.js): alan tablosu kartın içinde, düğme kaydı panelde açar
+        html: require(`${__hooks}/lib/mail.js`).layout({
+          title: `Yeni form gönderimi: ${title}`,
+          intro: "Web sitesinden yeni bir form gönderimi geldi.",
+          bodyHtml: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0;border-collapse:collapse;">${rows}</table>`,
+          action: panelUrl ? { label: "Panelde aç", url: panelUrl } : null,
+          footer: `Panelde: ${col.name} / ${record.id}`,
+        }),
         headers,
       })
       app.newMailClient().send(message)
