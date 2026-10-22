@@ -16,6 +16,7 @@ module.exports = {
     paper: "#ffffff",
     url: "https://www.idealistmuhendislik.com.tr",
     logo: "https://www.idealistmuhendislik.com.tr/brand/logo-mail.png",
+    icon: "https://www.idealistmuhendislik.com.tr/brand/icon.png",
   },
 
   // Panel korumaları; alanların anlamı lib/protect.js başında.

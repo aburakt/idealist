@@ -7,7 +7,7 @@ import { createRequire } from "node:module"
 import { join } from "node:path"
 import { startPb, SITE_ID, type Pb } from "../scripts/pb-harness"
 import { htmlPart, startSmtpSink, subject } from "../scripts/smtp-sink"
-import { MAIL_LOGO, mailLogoPng } from "../site/src/lib/mail-logo"
+import { iconPng, MAIL_LOGO, mailLogoPng, PANEL_ICON, PANEL_LOGO, panelLogoPng } from "../site/src/lib/mail-logo"
 
 const ROOT = join(import.meta.dir, "..")
 // sharp sitenin (workspace) bağımlılığı
@@ -16,7 +16,7 @@ const HOOKS = join(ROOT, "pb", "pb_hooks")
 // hook kütüphaneleri PB dışında da yüklenir: __hooks dışında PB global'i kullanmazlar (brand verildiğinde)
 ;(globalThis as { __hooks?: string }).__hooks = HOOKS
 
-type Brand = { name: string; color: string; ink: string; paper: string; url: string; logo: string }
+type Brand = { name: string; color: string; ink: string; paper: string; url: string; logo: string; icon: string }
 type Tpl = { subject: string; body: string }
 type BrandLib = {
   brand(app?: unknown, raw?: Partial<Brand>): Brand
@@ -24,7 +24,8 @@ type BrandLib = {
   onColor(bg: string, ink: string): string
   readable(fg: string, bg: string, min: number, toward: string): string
   initials(name: string): string
-  panel(b: Brand, logoPath: string): { name: string; accent: string; wordmark: string; wordmarkLight: string; favicon: string; logo: string }
+  sources(b: Brand, kind: "logo" | "icon"): string[]
+  panel(b: Brand, base: string): { name: string; accent: string; wordmark: string; wordmarkLight: string; favicon: string; logo: string; icon: string }
 }
 type MailLib = {
   esc(v: unknown): string
@@ -50,6 +51,7 @@ describe("site.js BRAND", () => {
     expect(raw!.url ?? "").not.toMatch(/\/$/)
     // logo: build'in ürettiği PNG (Gmail/Outlook SVG göstermez)
     expect(raw!.logo ?? "").toMatch(/^(https:\/\/\S+\.png)?$/)
+    expect(raw!.icon ?? "").toMatch(/^(https:\/\/\S+\.png)?$/)
   })
 
   test("logo varsa sitenin kendi /brand/logo-mail.png adresi ve site/public/logo.svg var", async () => {
@@ -57,6 +59,12 @@ describe("site.js BRAND", () => {
     if (!logo) return
     expect(logo).toBe(`${site.BRAND!.url}/brand/logo-mail.png`)
     expect(await Bun.file(join(ROOT, "site", "public", "logo.svg")).exists()).toBe(true)
+  })
+
+  test("sitenin favicon'u varsa BRAND.icon onun /brand/icon.png adresi (panel sekme simgesi), yoksa boş", async () => {
+    const pub = (f: string) => Bun.file(join(ROOT, "site", "public", f)).exists()
+    const has = (await pub("favicon.svg")) || (await pub("favicon.png"))
+    expect(site.BRAND?.icon ?? "").toBe(has && site.BRAND?.url ? `${site.BRAND.url}/brand/icon.png` : "")
   })
 })
 
@@ -82,10 +90,14 @@ describe("renkler (lib/brand.js)", () => {
     expect(x.logo).toBe("")
     expect(b({ color: "#ABC", url: "https://ornek.test/" })).toMatchObject({ color: "#aabbcc", url: "https://ornek.test" })
   })
-  test("baş harfler Türkçe büyür", () => {
+  test("baş harfler Türkçe büyür; ad kısaltmayla başlıyorsa kısaltma", () => {
     expect(lib.initials("idealist mühendislik")).toBe("İM")
     expect(lib.initials("ılık Su")).toBe("IS")
-    expect(lib.initials("EBS")).toBe("E")
+    expect(lib.initials("EBS")).toBe("EBS")
+    expect(lib.initials("EBS Bilgisayar")).toBe("EBS")
+    expect(lib.initials("JCI Ankara")).toBe("JCI")
+    expect(lib.initials("Keyfince Wedding Garden")).toBe("KW")
+    expect(lib.initials("A Grubu")).toBe("AG")
   })
 })
 
@@ -141,15 +153,26 @@ describe("e-posta düzeni (lib/mail.js)", () => {
 
 describe("panel markası (lib/brand.js panel)", () => {
   test("vurgu rengi beyaz yazıyla okunur; logo yoksa rozet + ad", () => {
-    const p = lib.panel(b({ color: "#efc40f" }), "/api/x/brand/logo")
+    const p = lib.panel(b({ color: "#efc40f" }), "/api/x/brand")
     expect(lib.contrast(p.accent, "#ffffff")).toBeGreaterThanOrEqual(4.5)
     expect(p.logo).toBe("")
+    expect(p.icon).toBe("")
     expect(p.wordmark).toStartWith("data:image/svg+xml")
     expect(decodeURIComponent(p.wordmark)).toContain(">Deneme &amp; Ortak</text>")
     expect(decodeURIComponent(p.favicon)).toContain(">DO</text>")
   })
-  test("logo varsa PB'nin kendi adresi (panel CSP'si dış görsele kapalı)", () => {
-    expect(lib.panel(b({ logo: "https://ornek.test/brand/logo-mail.png" }), "/api/x/brand/logo").logo).toBe("/api/x/brand/logo")
+  test("logo ve simge varsa PB'nin kendi adresi (panel CSP'si dış görsele kapalı)", () => {
+    const p = lib.panel(b({ logo: "https://ornek.test/brand/logo-mail.png", icon: "https://ornek.test/brand/icon.png" }), "/api/x/brand")
+    expect(p.logo).toBe("/api/x/brand/logo")
+    expect(p.icon).toBe("/api/x/brand/icon")
+  })
+  test("panel logosu önce kırpılmış logo-panel.png, olmazsa e-posta logosu; simge yalnız BRAND.icon", () => {
+    const x = b({ logo: "https://ornek.test/brand/logo-mail.png", icon: "https://ornek.test/brand/icon.png" })
+    expect(lib.sources(x, "logo")).toEqual(["https://ornek.test/brand/logo-panel.png", "https://ornek.test/brand/logo-mail.png"])
+    expect(lib.sources(x, "icon")).toEqual(["https://ornek.test/brand/icon.png"])
+    expect(lib.sources(b({ logo: "https://cdn.test/marka.png" }), "logo")).toEqual(["https://cdn.test/marka.png"])
+    expect(lib.sources(b({}), "logo")).toEqual([])
+    expect(lib.sources(b({ icon: "http://x.test/i.png" }), "icon")).toEqual([])
   })
 })
 
@@ -163,6 +186,27 @@ describe("e-posta logosu PNG (site/src/lib/mail-logo.ts)", () => {
     const px = (x: number, y: number) => Array.from(data.subarray((y * info.width + x) * 4, (y * info.width + x) * 4 + 4))
     expect(px(0, 40)[3]).toBe(0) // kenar şeffaf
     expect(px(200, 40)).toEqual([204, 0, 0, 255]) // kare 80x80, ortada
+  })
+})
+
+describe("panel logosu ve simgesi PNG (site/src/lib/mail-logo.ts)", () => {
+  // 100x20 SVG'nin ortasında 50x10 kırmızı dikdörtgen: kenar boşluğu kırpılır
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20" width="100" height="20"><rect x="25" y="5" width="50" height="10" fill="#c00"/></svg>'
+  test("panel logosu kenarı kırpılmış, 112 px yükseklik ya da 640 px genişliğe sığar, oran korunur", async () => {
+    const meta = await sharp(await panelLogoPng(svg)).metadata()
+    expect(meta.format).toBe("png")
+    expect(meta.height).toBeLessThanOrEqual(PANEL_LOGO.height)
+    expect(meta.width).toBeLessThanOrEqual(PANEL_LOGO.width)
+    expect(Math.max(meta.width / PANEL_LOGO.width, meta.height! / PANEL_LOGO.height)).toBeGreaterThan(0.98)
+    expect(meta.width / meta.height!).toBeCloseTo(5, 1)
+  })
+  test("simge 128x128 şeffaf kare; SVG ve PNG kaynaktan", async () => {
+    for (const src of [svg, await sharp(Buffer.from(svg)).png().toBuffer()]) {
+      const img = sharp(await iconPng(src))
+      expect(await img.metadata()).toMatchObject({ format: "png", width: PANEL_ICON, height: PANEL_ICON, hasAlpha: true })
+      const { data } = await img.raw().toBuffer({ resolveWithObject: true })
+      expect(data[3]).toBe(0) // köşe şeffaf
+    }
   })
 })
 
@@ -209,12 +253,13 @@ describe("PocketBase: sistem e-postaları ve panel", () => {
     expect(js.startsWith("window.PB_TR_LABELS = {")).toBe(true)
     const m = /window\.PB_BRAND = (\{.*\});/.exec(js)
     expect(m).not.toBeNull()
-    const data = JSON.parse(m![1]!) as { name: string; accent: string; wordmark: string; logo: string }
+    const data = JSON.parse(m![1]!) as { name: string; accent: string; wordmark: string; logo: string; icon: string }
     expect(data.name).toBe(name)
     expect(data.accent).toMatch(HEX)
     expect(data.wordmark).toStartWith("data:image/svg+xml")
     expect(js).toContain('set("mainLogo"')
     expect(data.logo).toBe(site.BRAND?.logo ? `/api/${SITE_ID}/brand/logo` : "")
+    expect(data.icon).toBe(site.BRAND?.icon ? `/api/${SITE_ID}/brand/icon` : "")
   })
 
   test("logo adresi: logo yoksa 404", async () => {

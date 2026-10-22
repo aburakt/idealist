@@ -1,8 +1,11 @@
 // ORTAK (core): template'ten gelir, sitede elle değiştirilmez (bun run core:sync).
 // Panelin markası: panel-tr.pb.js bunu /_/extensions.js içinde tr.js'in ardından, window.PB_BRAND verisiyle sunar
-// (veri lib/brand.js panel(): name, accent, wordmark, wordmarkLight, favicon, logo).
+// (veri lib/brand.js panel(): name, accent, wordmark, wordmarkLight, favicon, logo, icon).
 // PocketBase 0.40 paneli logoyu ve sekme simgesini app.store'dan okur (mainLogo: giriş ekranı, headerLogo: üst çubuk,
-// favicon). Logo varsa PB'nin kendi adresinden (/api/<ID>/brand/logo) yüklenir, yüklenemezse rozet + site adı kalır.
+// favicon). Logo ve simge varsa PB'nin kendi adresinden (/api/<ID>/brand/logo, /icon) yüklenir; yüklenemezse rozet +
+// site adı ve baş harfli simge kalır.
+// Boyutlar: giriş ekranında logo en çok 56 px yüksek / 280 px geniş, üst çubukta beyaz kutuda 28 px yüksek / 200 px geniş
+// (oran korunur; logo-panel.png kenar boşluğu kırpılmış geldiği için kutuyu doldurur).
 // Vurgu rengi panelin --accentColor değişkenine yazılır. PB'nin yapısı değişirse sessizce hiçbir şey yapmaz.
 {
   const brand = window.PB_BRAND
@@ -40,9 +43,17 @@
       img.onload = () => {
         set("mainLogo", brand.logo)
         set("headerLogo", brand.logo)
-        css(accent + `.app-header .logo img{background:#fff;padding:3px 8px;border-radius:6px;box-sizing:content-box;max-height:22px}`)
+        css(accent
+          + `img.main-logo{width:auto!important;height:auto!important;max-width:min(280px,80vw);max-height:56px}`
+          + `.app-header .logo img{width:auto!important;height:28px!important;max-width:200px;object-fit:contain;`
+          + `background:#fff;padding:2px 6px;border-radius:6px;box-sizing:content-box}`)
       }
       img.src = brand.logo
+    }
+    if (brand.icon) {
+      const icon = new Image()
+      icon.onload = () => set("favicon", brand.icon)
+      icon.src = brand.icon
     }
   }
 }
