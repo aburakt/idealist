@@ -7,7 +7,10 @@
 //   color  vurgu rengi (#rrggbb; sitenin CSS'indeki ana renk), ink / paper metin ve zemin rengi (isteğe bağlı)
 //   url    sitenin herkese açık adresi (PUBLIC_SITE_URL ile aynı), logo e-posta logosunun https adresi (isteğe bağlı;
 //          build site/public/logo.svg'den <url>/brand/logo-mail.png üretir). Logo yoksa ad yazıyla (wordmark) gösterilir.
-// Kullananlar: lib/mail.js (e-posta şablonları), brand.pb.js (sistem e-postaları, panel vurgu rengi, panel logosu).
+//   icon   sekme simgesinin https adresi (isteğe bağlı; build sitenin favicon'undan <url>/brand/icon.png üretir).
+//          Yoksa panel sekmesinde baş harfli rozet görünür.
+// Panel logosu e-posta logosunun yanındaki <url>/brand/logo-panel.png'dir (kenar boşluğu kırpılmış); yoksa e-posta logosu.
+// Kullananlar: lib/mail.js (e-posta şablonları), brand.pb.js (sistem e-postaları, panel logosu ve simgesi).
 // Renk hesapları (kontrast, okunur renk) WCAG 2.x göreli parlaklığıyla yapılır.
 
 const DEFAULTS = { color: "#2b3a4a", ink: "#1f2124", paper: "#f4f4f1" }
@@ -70,11 +73,21 @@ function readable(fg, bg, min, toward) {
   return toward
 }
 
-/** Addan baş harfler (en çok iki): "İdealist Mühendislik" → "İM". Türkçe i/ı doğru büyür. */
+/**
+ * Addan rozet harfleri: ad kısaltmayla başlıyorsa (2-4 büyük harf: "EBS Bilgisayar", "JCI Ankara") kısaltmanın kendisi,
+ * değilse ilk iki kelimenin baş harfleri ("İdealist Mühendislik" → "İM"). Türkçe i/ı doğru büyür.
+ */
 function initials(name) {
   const up = (ch) => (ch === "i" ? "İ" : ch === "ı" ? "I" : ch.toUpperCase())
   const words = String(name || "").split(/[\s\-–·.,]+/).filter((w) => /^[^!-/:-@[-`{-~]/.test(w))
+  const first = words[0] || ""
+  if (/^[A-ZÇĞİÖŞÜ0-9]{2,4}$/.test(first) && /[A-ZÇĞİÖŞÜ]/.test(first)) return first
   return words.slice(0, 2).map((w) => up(Array.from(w)[0])).join("") || "•"
+}
+
+/** Rozet yazı boyutu harf sayısına göre (64 birimlik kare için; wordmark rozeti oranla küçültür). */
+function badgeSize(ini) {
+  return [34, 34, 26, 20, 16][Math.min(4, Array.from(ini).length)]
 }
 
 function siteModule() {
@@ -87,7 +100,7 @@ function siteModule() {
 
 /**
  * Sitenin markası, eksikler tamamlanmış. raw verilmezse site.js BRAND okunur; app verilirse ad yoksa uygulama adından.
- * Dönen nesne: { name, color, ink, paper, url, logo }; renkler #rrggbb, url sonda / olmadan, logo yalnız https.
+ * Dönen nesne: { name, color, ink, paper, url, logo, icon }; renkler #rrggbb, url sonda / olmadan, logo/icon yalnız https.
  */
 function brand(app, raw) {
   const site = raw ? {} : siteModule()
@@ -103,7 +116,8 @@ function brand(app, raw) {
   }
   if (!name) name = String(site.ID || "Site")
   const url = /^https?:\/\/[^\s"'<>]+$/.test(String(b.url || "")) ? String(b.url).replace(/\/+$/, "") : ""
-  const logo = /^https:\/\/[^\s"'<>]+$/.test(String(b.logo || "")) ? String(b.logo) : ""
+  const https = (v) => (/^https:\/\/[^\s"'<>]+$/.test(String(v || "")) ? String(v) : "")
+  const logo = https(b.logo)
   return {
     name,
     color: hex6(b.color, DEFAULTS.color),
@@ -111,7 +125,45 @@ function brand(app, raw) {
     paper: hex6(b.paper, DEFAULTS.paper),
     url,
     logo,
+    icon: https(b.icon),
   }
+}
+
+/** Panel görselinin denenecek adresleri (sırayla): logo kırpılmış panel logosu, sonra e-posta logosu; icon sekme simgesi. */
+function sources(b, kind) {
+  if (kind === "icon") return b.icon ? [b.icon] : []
+  if (!b.logo) return []
+  const trimmed = b.logo.replace(/\/logo-mail\.png$/, "/logo-panel.png")
+  return trimmed === b.logo ? [b.logo] : [trimmed, b.logo]
+}
+
+/**
+ * Panel görselini indirir (brand.pb.js: GET /api/<ID>/brand/logo|icon). Panel CSP'si dış görsele kapalı olduğu için PB
+ * kendi adresinden verir. Yalnız site.js BRAND'deki sabit adresler, yalnız raster (SVG PB adresinden sunulursa betik
+ * taşıyabilir), en çok 512 KB. Sonuç 6 saat, hata 10 dakika önbellekte. Dönen: { type, body } ya da null.
+ */
+function fetchImage(app, kind) {
+  const urls = sources(brand(app), kind)
+  if (!urls.length) return null
+  const key = `brand.${kind}:${urls.join(" ")}`
+  let hit = app.store().get(key)
+  if (!hit || hit.until < Date.now()) {
+    hit = { type: "", body: null, until: Date.now() + 10 * 60 * 1000 }
+    for (const url of urls) {
+      try {
+        const res = $http.send({ url, method: "GET", timeout: 10 })
+        const type = String((res.headers["Content-Type"] || [""])[0] || "").split(";")[0].trim()
+        if (res.statusCode === 200 && /^image\/(png|webp|jpeg|gif)$/.test(type) && res.body.length && res.body.length <= 512 * 1024) {
+          hit = { type, body: res.body, until: Date.now() + 6 * 60 * 60 * 1000 }
+          break
+        }
+      } catch (err) {
+        app.logger().warn("Panel görseli indirilemedi", "url", url, "error", String(err))
+      }
+    }
+    app.store().set(key, hit)
+  }
+  return hit.body ? { type: hit.type, body: hit.body } : null
 }
 
 function escXml(s) {
@@ -129,7 +181,7 @@ const textWidth = (text, size) => Math.ceil(Array.from(text).length * size * 0.6
 /** Kare monogram (favicon ve wordmark rozeti): renkli zemin, okunur baş harfler. */
 function monogramSvg(b, fill, fg) {
   const ini = escXml(initials(b.name))
-  const size = Array.from(initials(b.name)).length > 1 ? 26 : 34
+  const size = badgeSize(initials(b.name))
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">`
     + `<rect width="64" height="64" rx="14" fill="${fill}"/>`
     + `<text x="32" y="33" dominant-baseline="central" text-anchor="middle" font-family="${FONT}" font-size="${size}" font-weight="700" fill="${fg}">${ini}</text></svg>`
@@ -145,7 +197,7 @@ function wordmarkSvg(b, light) {
   const badgeFg = light ? b.color : onColor(b.color, b.ink)
   const text = light ? WHITE : readable(b.color, WHITE, 3, b.ink)
   const ini = escXml(initials(b.name))
-  const isz = Array.from(initials(b.name)).length > 1 ? 15 : 19
+  const isz = Math.round((badgeSize(initials(b.name)) * 36) / 64)
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">`
     + `<rect x="0" y="2" width="36" height="36" rx="9" fill="${badgeFill}"/>`
     + `<text x="18" y="21" dominant-baseline="central" text-anchor="middle" font-family="${FONT}" font-size="${isz}" font-weight="700" fill="${badgeFg}">${ini}</text>`
@@ -154,18 +206,20 @@ function wordmarkSvg(b, light) {
 
 /**
  * Panelin (/_/extensions.js, panel/brand.js) marka verisi. Panel CSP'si (img-src 'self' data:) dış adresi engeller:
- * logo PB'nin kendi adresinden (logoPath, brand.pb.js) gelir; yüklenemezse rozet + ad (wordmark) kalır.
+ * logo ve simge PB'nin kendi adresinden (base = /api/<ID>/brand, brand.pb.js) gelir; yüklenemezse rozet + ad (wordmark)
+ * ve baş harfli sekme simgesi kalır.
  * accent: panel vurgu rengi; panel bu zeminde beyaz yazı kullandığı için beyazla en az 4.5:1 olacak kadar koyulaştırılır.
  */
-function panel(b, logoPath) {
+function panel(b, base) {
   return {
     name: b.name,
     accent: readable(b.color, WHITE, 4.5, "#000000"),
     wordmark: svgUri(wordmarkSvg(b, false)),
     wordmarkLight: svgUri(wordmarkSvg(b, true)),
     favicon: svgUri(monogramSvg(b, b.color, onColor(b.color, b.ink))),
-    logo: b.logo && logoPath ? logoPath : "",
+    logo: b.logo && base ? `${base}/logo` : "",
+    icon: b.icon && base ? `${base}/icon` : "",
   }
 }
 
-module.exports = { DEFAULTS, brand, hex6, luminance, contrast, mix, onColor, readable, initials, panel, wordmarkSvg, monogramSvg }
+module.exports = { DEFAULTS, brand, sources, fetchImage, hex6, luminance, contrast, mix, onColor, readable, initials, panel, wordmarkSvg, monogramSvg }

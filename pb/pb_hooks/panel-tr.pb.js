@@ -21,7 +21,7 @@ routerUse((e) => {
   try {
     const site = require(__hooks + "/site.js")
     const lib = require(__hooks + "/lib/brand.js")
-    const data = JSON.stringify(lib.panel(lib.brand(e.app), "/api/" + site.ID + "/brand/logo"))
+    const data = JSON.stringify(lib.panel(lib.brand(e.app), "/api/" + site.ID + "/brand"))
     brand = "\nwindow.PB_BRAND = " + data + ";\n" + toString($os.readFile(__hooks + "/panel/brand.js"))
   } catch (err) {
     e.app.logger().warn("Panel markası yüklenemedi", "error", String(err))
