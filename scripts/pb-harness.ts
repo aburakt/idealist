@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs"
+import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { ensurePocketBase } from "./pb-binary"
@@ -33,15 +33,35 @@ function withJson(init: RequestInit = {}, token?: string): RequestInit {
   return { ...init, headers }
 }
 
+export type StartOptions = {
+  /** site.js yerine geçecek değerler (test için ör. SHOP açık): hook'lar geçici dizine kopyalanıp site.js yeniden yazılır. */
+  site?: Record<string, unknown>
+  /** repodaki migration'lara eklenecek dosyalar (ör. pb/shop/1792200000_shop.js) */
+  migrations?: string[]
+}
+
 /** Geçici dizinde, repodaki migration ve hook'larla bir PocketBase başlatır. */
-export async function startPb(env: Record<string, string> = {}): Promise<Pb> {
+export async function startPb(env: Record<string, string> = {}, opts: StartOptions = {}): Promise<Pb> {
   const bin = await ensurePocketBase()
   const dir = mkdtempSync(join(tmpdir(), `${SITE_ID}-pb-`))
   const dataDir = join(dir, "pb_data")
+  let hooksDir = join(ROOT, "pb", "pb_hooks")
+  let migrationsDir = join(ROOT, "pb", "pb_migrations")
+  if (opts.site) {
+    hooksDir = join(dir, "pb_hooks")
+    cpSync(join(ROOT, "pb", "pb_hooks"), hooksDir, { recursive: true })
+    const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as Record<string, unknown>
+    writeFileSync(join(hooksDir, "site.js"), `module.exports = ${JSON.stringify({ ...site, ...opts.site })}\n`)
+  }
+  if (opts.migrations?.length) {
+    migrationsDir = join(dir, "pb_migrations")
+    cpSync(join(ROOT, "pb", "pb_migrations"), migrationsDir, { recursive: true })
+    for (const file of opts.migrations) cpSync(join(ROOT, file), join(migrationsDir, file.split("/").pop()!))
+  }
   const common = [
     "--dir", dataDir,
-    "--migrationsDir", join(ROOT, "pb", "pb_migrations"),
-    "--hooksDir", join(ROOT, "pb", "pb_hooks"),
+    "--migrationsDir", migrationsDir,
+    "--hooksDir", hooksDir,
   ]
   const email = `verify@${SITE_ID}.test`
   const password = `Verify-${crypto.randomUUID()}`

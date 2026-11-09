@@ -4,6 +4,8 @@
 // PB adresi siteden siteye (ve verify'da her çalıştırmada) değiştiği için _headers'a elle yazılmaz:
 // build bitince PB_URL'nin kökeni dist/_headers içindeki connect-src'ye eklenir. Yalnız site.js FORMS doluysa
 // ve PB modunda (CONTENT_SOURCE=fixture değil, PB_URL tanımlı) yapılır; önizlemede form kapalıdır.
+// Mağaza (site.js SHOP, docs/shop.md) açıksa da PB kökeni eklenir (sepet, canlı stok, ödeme adımı) ve ödeme formu
+// sağlayıcının sayfasına gittiği için form-action'a sağlayıcının kökeni yazılır (ör. Shopier).
 // Tarayıcı hata takibi (ErrorTracking.astro) açıksa GlitchTip kökeni de aynı yolla eklenir.
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
@@ -18,11 +20,25 @@ export function allowConnect(headers: string, origin: string): string {
     sources.split(/\s+/).includes(origin) ? all : `connect-src${sources} ${origin}`)
 }
 
-/** site.js FORMS. Kök package.json "type": "module" olduğundan Node bu CommonJS dosyasını require edemez; metni çalıştırılır. */
-function siteForms(): string[] {
-  const mod: { exports: { FORMS?: string[] } } = { exports: {} }
+/** _headers metnindeki her form-action yönergesine kökeni ekler (zaten varsa dokunmaz). */
+export function allowFormAction(headers: string, origin: string): string {
+  return headers.replace(/form-action([^;\n]*)/g, (all, sources: string) =>
+    sources.split(/\s+/).includes(origin) ? all : `form-action${sources} ${origin}`)
+}
+
+/** Mağaza ödeme sağlayıcılarının ödeme sayfası kökeni (lib/shop-<provider>.js ENDPOINT ile aynı). */
+export const PAYMENT_ORIGINS: Record<string, string[]> = {
+  shopier: ["https://www.shopier.com"],
+  iyzico: ["https://cpp.iyzipay.com", "https://sandbox-cpp.iyzipay.com"],
+}
+
+type SiteJs = { FORMS?: string[]; SHOP?: { provider?: string } | null }
+
+/** site.js. Kök package.json "type": "module" olduğundan Node bu CommonJS dosyasını require edemez; metni çalıştırılır. */
+function siteJs(): SiteJs {
+  const mod: { exports: SiteJs } = { exports: {} }
   new Function("module", "exports", readFileSync(SITE_JS, "utf8"))(mod, mod.exports)
-  return mod.exports.FORMS ?? []
+  return mod.exports
 }
 
 export default function pbCsp(): AstroIntegration {
@@ -33,19 +49,31 @@ export default function pbCsp(): AstroIntegration {
         const pbUrl = process.env.PB_URL
         if (process.env.CONTENT_SOURCE === "fixture" || !pbUrl) return
         const origins: [string, string][] = []
+        const actions: string[] = []
         try {
-          if (siteForms().length) origins.push([new URL(pbUrl).origin, "form gönderimi"])
+          const site = siteJs()
+          if (site.FORMS?.length) origins.push([new URL(pbUrl).origin, "form gönderimi"])
+          if (site.SHOP) {
+            origins.push([new URL(pbUrl).origin, "mağaza"])
+            const pay = PAYMENT_ORIGINS[site.SHOP.provider ?? "shopier"]
+            if (pay) actions.push(...pay)
+          }
         } catch (err) {
-          logger.warn(`${SITE_JS} okunamadı, form için connect-src değişmedi: ${String(err)}`)
+          logger.warn(`${SITE_JS} okunamadı, form/mağaza için CSP değişmedi: ${String(err)}`)
         }
         const dsn = process.env.PUBLIC_GLITCHTIP_DSN ?? GLITCHTIP_DSN
         if (dsn) origins.push([new URL(dsn).origin, "hata takibi"])
         const file = fileURLToPath(new URL("_headers", dir))
-        if (!origins.length || !existsSync(file)) return
+        if ((!origins.length && !actions.length) || !existsSync(file)) return
         let headers = readFileSync(file, "utf8")
         for (const [origin, why] of origins) {
           const next = allowConnect(headers, origin)
           if (next !== headers) logger.info(`connect-src: ${origin} (${why})`)
+          headers = next
+        }
+        for (const origin of actions) {
+          const next = allowFormAction(headers, origin)
+          if (next !== headers) logger.info(`form-action: ${origin} (ödeme sayfası)`)
           headers = next
         }
         writeFileSync(file, headers)
