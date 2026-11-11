@@ -7,8 +7,15 @@ import { checkLock } from "../scripts/core-sync"
 // ORTAK (core): template'ten gelir, sitede elle değiştirilmez. Her sitede aynı standartları ölçer:
 // core dosyaları elle değişmemiş, şema kuralları, panelin müşteriye hazır olması, inline stil/betik yok.
 const ROOT = join(import.meta.dir, "..")
-const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as { ID: string; CONTENT: string[]; RULES: Record<string, unknown>; FORMS?: string[] }
+const site = require(join(ROOT, "pb", "pb_hooks", "site.js")) as {
+  ID: string; CONTENT: string[]; RULES: Record<string, unknown>; FORMS?: string[]; MEMBERS?: { auth: string; collections: string[] } | null
+}
 const FORMS = site.FORMS ?? []
+// Üye alanı (isteğe bağlı, docs/members.md): giriş yapan hesap koleksiyonu ve hesabın kendi kayıtlarını yazdığı koleksiyonlar.
+const MEMBER_AUTH = site.MEMBERS?.auth ? [site.MEMBERS.auth] : []
+const MEMBER_COLS = site.MEMBERS?.collections ?? []
+const MEMBERS = [...MEMBER_AUTH, ...MEMBER_COLS]
+const AUTH = "@request.auth.id"
 // core'un kendi koleksiyonları (core migration'larıyla gelir): içerik değil, yayın tetiklemez, yalnız superuser okur.
 // orders: mağaza modülünün siparişleri (pb/shop, docs/shop.md); yalnız hook yazar, API'den kimse okuyamaz.
 const CORE_COLLECTIONS = ["audit_log", "orders"]
@@ -39,16 +46,33 @@ describe("core", () => {
 
 describe("şema standardı", () => {
   test("site.js CONTENT şemadaki koleksiyonların tamamı (yeni koleksiyon yayın hook'una da eklenir)", () => {
-    expect([...site.CONTENT].sort()).toEqual(cols.map((c) => c.name).filter((n) => !FORMS.includes(n) && !CORE_COLLECTIONS.includes(n)).sort())
+    expect([...site.CONTENT].sort()).toEqual(cols.map((c) => c.name).filter((n) => !FORMS.includes(n) && !CORE_COLLECTIONS.includes(n) && !MEMBERS.includes(n)).sort())
+  })
+  test("MEMBERS: hesap koleksiyonu auth tipinde, üye koleksiyonları şemada", () => {
+    const types = cols as unknown as { name: string; type: string }[]
+    expect(MEMBER_AUTH.filter((n) => types.find((c) => c.name === n)?.type !== "auth")).toEqual([])
+    expect(MEMBER_COLS.filter((n) => !cols.some((c) => c.name === n))).toEqual([])
+    expect(MEMBERS.filter((n) => site.CONTENT.includes(n) || FORMS.includes(n))).toEqual([])
   })
   test("RULES yalnız var olan koleksiyonları anar", () => {
     expect(Object.keys(site.RULES).filter((n) => !cols.some((c) => c.name === n))).toEqual([])
   })
-  test("yazma yalnız superuser; okuma herkese açık ya da published = true ile sınırlı (FORMS: ziyaretçi yalnız gönderir)", () => {
+  test("yazma yalnız superuser; okuma herkese açık ya da published = true ile sınırlı (FORMS: ziyaretçi yalnız gönderir; MEMBERS: giriş yapan hesap)", () => {
     const bad: string[] = []
     for (const c of cols) {
       if (CORE_COLLECTIONS.includes(c.name)) {
         for (const k of ["listRule", "viewRule", "createRule", "updateRule", "deleteRule"] as const) if (c[k] !== null) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
+        continue
+      }
+      if (MEMBER_AUTH.includes(c.name)) {
+        // hesabı yönetici açar ve siler; hesap yalnız kendini (ya da kuralın izin verdiği rolü) okur ve günceller
+        for (const k of ["createRule", "deleteRule"] as const) if (c[k] !== null) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
+        for (const k of ["listRule", "viewRule", "updateRule"] as const) if (c[k] !== null && !c[k]!.includes(AUTH)) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
+        continue
+      }
+      if (MEMBER_COLS.includes(c.name)) {
+        // üye kaydı: her kural ya kapalı (null) ya da giriş yapmış hesaba bağlı; herkese açık ("") kural yok
+        for (const k of ["listRule", "viewRule", "createRule", "updateRule", "deleteRule"] as const) if (c[k] !== null && !c[k]!.includes(AUTH)) bad.push(`${c.name}.${k} = ${JSON.stringify(c[k])}`)
         continue
       }
       if (FORMS.includes(c.name)) {

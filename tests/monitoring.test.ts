@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test"
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { allowConnect } from "../site/integrations/pb-csp"
+import { IGNORE_ERRORS } from "../site/src/lib/error-tracking"
 import { GLITCHTIP_DSN } from "../site/src/lib/monitoring"
 
 const ROOT = join(import.meta.dir, "..")
@@ -23,5 +24,14 @@ describe("tarayıcı hata takibi", () => {
     const withGeo = layouts.filter((f) => read("site/src/layouts", f).includes("<Geo "))
     expect(withGeo.length).toBeGreaterThan(0)
     for (const f of withGeo) expect(read("site/src/layouts", f), f).toContain("<ErrorTracking />")
+  })
+
+  test("gürültü filtresi bilinen gürültüyü eler, gerçek hatayı elemez", () => {
+    const ignored = (m: string) => IGNORE_ERRORS.some((r) => r.test(m))
+    expect(ignored("Non-Error promise rejection captured with value: Object Not Found Matching Id:2, MethodName:update, ParamCount:4")).toBe(true)
+    expect(ignored("AbortError: Skipping view transition because skipTransition() was called.")).toBe(true)
+    expect(ignored("TypeError: Cannot read properties of undefined (reading 'id')")).toBe(false)
+    expect(ignored("Object Not Found")).toBe(false)
+    expect(ignored("TypeError: Load failed")).toBe(false)
   })
 })

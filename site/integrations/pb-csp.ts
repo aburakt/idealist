@@ -6,6 +6,7 @@
 // ve PB modunda (CONTENT_SOURCE=fixture değil, PB_URL tanımlı) yapılır; önizlemede form kapalıdır.
 // Mağaza (site.js SHOP, docs/shop.md) açıksa da PB kökeni eklenir (sepet, canlı stok, ödeme adımı) ve ödeme formu
 // sağlayıcının sayfasına gittiği için form-action'a sağlayıcının kökeni yazılır (ör. Shopier).
+// Üye alanı (site.js MEMBERS, docs/members.md) açıksa da PB kökeni eklenir: giriş ve üye kayıtları tarayıcıdan okunur.
 // Tarayıcı hata takibi (ErrorTracking.astro) açıksa GlitchTip kökeni de aynı yolla eklenir.
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
@@ -32,7 +33,7 @@ export const PAYMENT_ORIGINS: Record<string, string[]> = {
   iyzico: ["https://cpp.iyzipay.com", "https://sandbox-cpp.iyzipay.com"],
 }
 
-type SiteJs = { FORMS?: string[]; SHOP?: { provider?: string } | null }
+type SiteJs = { FORMS?: string[]; SHOP?: { provider?: string } | null; MEMBERS?: { auth: string } | null }
 
 /** site.js. Kök package.json "type": "module" olduğundan Node bu CommonJS dosyasını require edemez; metni çalıştırılır. */
 function siteJs(): SiteJs {
@@ -53,6 +54,7 @@ export default function pbCsp(): AstroIntegration {
         try {
           const site = siteJs()
           if (site.FORMS?.length) origins.push([new URL(pbUrl).origin, "form gönderimi"])
+          if (site.MEMBERS?.auth) origins.push([new URL(pbUrl).origin, "üye alanı"])
           if (site.SHOP) {
             origins.push([new URL(pbUrl).origin, "mağaza"])
             const pay = PAYMENT_ORIGINS[site.SHOP.provider ?? "shopier"]
